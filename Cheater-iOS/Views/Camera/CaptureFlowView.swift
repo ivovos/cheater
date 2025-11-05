@@ -87,7 +87,7 @@ struct CaptureFlowView: View {
 
     private var shouldShowProcessing: Bool {
         switch viewModel.flowState {
-        case .processingOCR, .generatingQuiz, .saving, .completed:
+        case .generatingQuiz, .saving, .completed:
             return true
         default:
             return false
