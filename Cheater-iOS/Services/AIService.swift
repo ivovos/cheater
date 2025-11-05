@@ -62,10 +62,14 @@ actor AIService {
     // MARK: - Initialization
 
     init(apiKey: String? = nil) throws {
-        // Try to get API key from Config.plist or parameter
+        // Try to get API key from parameter or Config.plist
         if let key = apiKey {
             self.apiKey = key
-        } else if let key = Bundle.main.object(forInfoDictionaryKey: "ANTHROPIC_API_KEY") as? String, !key.isEmpty {
+        } else if let configPath = Bundle.main.path(forResource: "Config", ofType: "plist"),
+                  let config = NSDictionary(contentsOfFile: configPath),
+                  let key = config["ANTHROPIC_API_KEY"] as? String,
+                  !key.isEmpty,
+                  key != "your-api-key-here" {
             self.apiKey = key
         } else {
             throw AIError.missingAPIKey
