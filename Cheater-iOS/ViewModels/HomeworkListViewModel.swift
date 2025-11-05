@@ -38,9 +38,11 @@ class HomeworkListViewModel: ObservableObject {
 
     func loadHomework() {
         isLoading = true
+        print("🔄 Loading homework from Core Data...")
 
         let entities = persistenceController.fetchHomework()
         homework = entities.map { Homework(from: $0) }
+        print("📚 Loaded \(homework.count) homework items")
 
         isLoading = false
     }

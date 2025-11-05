@@ -133,9 +133,11 @@ class CaptureFlowViewModel: ObservableObject {
                 title: title,
                 subject: subject
             )
+            print("✅ Homework saved successfully")
 
             // Step 4: Complete
             flowState = .completed
+            print("✅ Capture flow completed")
 
         } catch let error as CaptureError {
             handleError(error)
@@ -170,21 +172,24 @@ class CaptureFlowViewModel: ObservableObject {
 
         // Create homework entity
         let homeworkEntity = HomeworkEntity(context: context)
-        homeworkEntity.id = UUID()
+        let homeworkId = UUID()
+        homeworkEntity.id = homeworkId
         homeworkEntity.title = title
         homeworkEntity.subject = subject
         homeworkEntity.ocrText = ocrText
         homeworkEntity.createdAt = Date()
+        print("📝 Creating homework: \(title) (\(homeworkId))")
 
         // Save image (for now, just store a placeholder)
         // In a real app, you'd save to file system or cloud storage
-        homeworkEntity.imageURL = "captured_\(homeworkEntity.id?.uuidString ?? "")"
+        homeworkEntity.imageURL = "captured_\(homeworkId.uuidString)"
 
         // Create quiz entity
         let quizEntity = QuizEntity(context: context)
         quizEntity.id = quiz.id
         quizEntity.createdAt = quiz.createdAt
         quizEntity.homework = homeworkEntity
+        print("📝 Creating quiz with \(quiz.questions.count) questions")
 
         // Save questions as JSON
         let questionsData = try JSONEncoder().encode(quiz.questions)
@@ -197,12 +202,15 @@ class CaptureFlowViewModel: ObservableObject {
         progressEntity.bestScore = 0
         progressEntity.totalAttempts = 0
         progressEntity.homework = homeworkEntity
+        print("📝 Creating progress entity")
 
         // Save context
         try context.save()
+        print("💾 Core Data context saved successfully")
     }
 
     private func handleError(_ error: CaptureError) {
+        print("❌ Capture error: \(error.localizedDescription)")
         flowState = .failed(error.localizedDescription)
         errorMessage = error.localizedDescription
         showError = true

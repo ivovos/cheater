@@ -43,6 +43,12 @@ struct HomeworkListView: View {
             .onAppear {
                 viewModel.loadHomework()
             }
+            .onChange(of: viewModel.showingCaptureSheet) { _, isShowing in
+                // Reload homework list when sheet is dismissed
+                if !isShowing {
+                    viewModel.loadHomework()
+                }
+            }
             .alert("Error", isPresented: $viewModel.showError) {
                 Button("OK", role: .cancel) {}
             } message: {
