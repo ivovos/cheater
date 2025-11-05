@@ -14,7 +14,8 @@ class QuizViewModel: ObservableObject {
     // MARK: - Published Properties
 
     @Published var currentQuestionIndex = 0
-    @Published var selectedAnswer: Int?
+    @Published var selectedAnswer: Int?           // For MCQ questions
+    @Published var textAnswer: String = ""        // For fill-blank and short-answer
     @Published var showFeedback = false
     @Published var answers: [QuestionAnswer] = []
     @Published var quizCompleted = false
@@ -58,8 +59,9 @@ class QuizViewModel: ObservableObject {
 
     // MARK: - Public Methods
 
+    /// Select answer for MCQ questions
     func selectAnswer(_ index: Int) {
-        guard !showFeedback else { return }
+        guard !showFeedback, currentQuestion.type == .mcq else { return }
 
         selectedAnswer = index
         withAnimation {
@@ -83,6 +85,48 @@ class QuizViewModel: ObservableObject {
         }
     }
 
+    /// Submit text answer for fill-blank or short-answer questions
+    func submitTextAnswer() {
+        guard !showFeedback else { return }
+        guard currentQuestion.type == .fillBlank || currentQuestion.type == .shortAnswer else { return }
+
+        withAnimation {
+            showFeedback = true
+        }
+
+        // Check if answer is correct (case-insensitive, trimmed)
+        let userAnswer = textAnswer.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let correctAnswer = (currentQuestion.correctAnswer ?? "").lowercased()
+
+        // For short answers, be more lenient - check if key words are present
+        let isCorrect: Bool
+        if currentQuestion.type == .shortAnswer {
+            // Consider correct if answer contains key concepts (this is simplified logic)
+            isCorrect = !userAnswer.isEmpty && (userAnswer == correctAnswer || userAnswer.contains(correctAnswer))
+        } else {
+            // For fill-blank, must be exact match
+            isCorrect = userAnswer == correctAnswer
+        }
+
+        // Record answer with custom correctIndex encoding
+        // For text answers, store isCorrect in a special way:
+        // correctIndex = actual correctIndex, selectedIndex = isCorrect ? 0 : -1
+        let answer = QuestionAnswer(
+            questionId: currentQuestion.id,
+            questionIndex: currentQuestionIndex,
+            selectedIndex: isCorrect ? 0 : nil,
+            correctIndex: currentQuestion.correctIndex ?? 0
+        )
+        answers.append(answer)
+
+        // Haptic feedback
+        if isCorrect {
+            HapticManager.success()
+        } else {
+            HapticManager.error()
+        }
+    }
+
     func nextQuestion() {
         if isLastQuestion {
             completeQuiz()
@@ -91,6 +135,7 @@ class QuizViewModel: ObservableObject {
             withAnimation {
                 currentQuestionIndex += 1
                 selectedAnswer = nil
+                textAnswer = ""
                 showFeedback = false
             }
         }
@@ -102,7 +147,7 @@ class QuizViewModel: ObservableObject {
             questionId: currentQuestion.id,
             questionIndex: currentQuestionIndex,
             selectedIndex: nil,
-            correctIndex: currentQuestion.correctIndex
+            correctIndex: currentQuestion.correctIndex ?? 0
         )
         answers.append(answer)
 
@@ -113,8 +158,19 @@ class QuizViewModel: ObservableObject {
             withAnimation {
                 currentQuestionIndex += 1
                 selectedAnswer = nil
+                textAnswer = ""
                 showFeedback = false
             }
+        }
+    }
+
+    /// Check if current answer is valid for submission
+    var canSubmitAnswer: Bool {
+        switch currentQuestion.type {
+        case .mcq:
+            return selectedAnswer != nil
+        case .fillBlank, .shortAnswer:
+            return !textAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
     }
 

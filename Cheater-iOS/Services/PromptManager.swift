@@ -34,35 +34,93 @@ struct PromptManager {
     // MARK: - Public Methods
 
     /// Build vision prompt for image-based quiz generation
-    func buildVisionPrompt(subject: String? = nil) -> String {
-        let vision = config.prompts.vision
+    /// - Parameters:
+    ///   - subject: Optional subject hint
+    ///   - topic: Topic for specialized prompts (maths, english, science, history, generic)
+    /// - Returns: Formatted prompt string
+    func buildVisionPrompt(subject: String? = nil, topic: String = "generic") -> String {
+        // Get topic-specific prompt, fallback to generic
+        guard let topicPrompt = config.prompts.vision[topic] ?? config.prompts.vision["generic"] else {
+            print("⚠️ No prompt found for topic '\(topic)', using generic")
+            return buildFallbackPrompt(subject: subject)
+        }
+
         let subjectHint = subject.map { " about \($0)" } ?? ""
 
-        var prompt = vision.system + "\n\n"
+        var prompt = topicPrompt.system + "\n\n"
 
         // Add prefix
-        prompt += vision.user.prefix.replacingOccurrences(of: "{subjectHint}", with: subjectHint) + "\n\n"
+        prompt += topicPrompt.user.prefix.replacingOccurrences(of: "{subjectHint}", with: subjectHint) + "\n\n"
 
         // Add instructions
-        prompt += vision.user.instructions.joined(separator: "\n") + "\n\n"
+        prompt += topicPrompt.user.instructions.joined(separator: "\n") + "\n\n"
 
         // Add requirements
         prompt += "Requirements:\n"
-        prompt += vision.user.requirements.map { "- \($0)" }.joined(separator: "\n") + "\n\n"
+        prompt += topicPrompt.user.requirements.map { "- \($0)" }.joined(separator: "\n") + "\n\n"
 
         // Add format
-        prompt += vision.user.format.description + "\n"
+        prompt += topicPrompt.user.format.description + "\n"
 
         // Add example (as JSON)
-        if let exampleData = try? JSONEncoder().encode(vision.user.format.example),
-           let exampleString = String(data: exampleData, encoding: .utf8) {
+        if let exampleDict = topicPrompt.user.format.example.value as? [String: Any],
+           let jsonData = try? JSONSerialization.data(withJSONObject: exampleDict, options: [.prettyPrinted]),
+           let exampleString = String(data: jsonData, encoding: .utf8) {
             prompt += exampleString + "\n\n"
         }
 
         // Add suffix
-        prompt += vision.user.suffix
+        prompt += topicPrompt.user.suffix
 
         return prompt
+    }
+
+    /// Get available topics
+    var availableTopics: [String] {
+        config.settings.topics
+    }
+
+    /// Get classification threshold
+    var classificationThreshold: Double {
+        config.settings.classificationThreshold
+    }
+
+    /// Get question type distribution for a topic
+    func questionTypeDistribution(for topic: String) -> QuestionTypeDistribution? {
+        config.settings.questionTypeDistribution[topic]
+    }
+
+    // MARK: - Private Methods
+
+    private func buildFallbackPrompt(subject: String?) -> String {
+        let subjectHint = subject.map { " about \($0)" } ?? ""
+        return """
+        You are an educational quiz generator for secondary school students.
+
+        Analyze this homework image and generate a 10-question multiple choice quiz from its content\(subjectHint).
+
+        Requirements:
+        - Exactly 10 questions
+        - Each question has exactly 4 options (labeled A, B, C, D)
+        - One correct answer per question
+        - Questions test understanding, not just memorization
+        - Include brief explanations for correct answers
+
+        Return ONLY a valid JSON object in this format:
+        {
+          "topic": "generic",
+          "confidence": 0.5,
+          "questions": [
+            {
+              "type": "mcq",
+              "question": "...",
+              "options": ["A", "B", "C", "D"],
+              "correctIndex": 0,
+              "explanation": "..."
+            }
+          ]
+        }
+        """
     }
 
     /// Build text prompt for text-based quiz generation
@@ -113,11 +171,11 @@ struct PromptConfig: Codable {
 }
 
 struct Prompts: Codable {
-    let vision: VisionPrompt
+    let vision: [String: TopicPrompt]  // Changed to dictionary of topics
     let text: TextPrompt
 }
 
-struct VisionPrompt: Codable {
+struct TopicPrompt: Codable {
     let system: String
     let user: VisionUserPrompt
 }
@@ -144,18 +202,16 @@ struct TextUserPrompt: Codable {
 
 struct FormatSpec: Codable {
     let description: String
-    let example: FormatExample
-}
-
-struct FormatExample: Codable {
-    let questions: [ExampleQuestion]
+    let example: AnyCodable  // Changed to support flexible format examples
 }
 
 struct ExampleQuestion: Codable {
     let question: String
-    let options: [String]
-    let correctIndex: Int
+    let options: [String]?
+    let correctIndex: Int?
+    let correctAnswer: String?
     let explanation: String
+    let type: String?
 }
 
 struct PromptSettings: Codable {
@@ -163,4 +219,63 @@ struct PromptSettings: Codable {
     let optionCount: Int
     let minExplanationLength: Int
     let maxExplanationLength: Int
+    let questionTypeDistribution: [String: QuestionTypeDistribution]
+    let classificationThreshold: Double
+    let topics: [String]
+}
+
+struct QuestionTypeDistribution: Codable {
+    let mcq: Double
+    let fillBlank: Double
+    let shortAnswer: Double
+}
+
+// Helper for flexible JSON encoding/decoding
+struct AnyCodable: Codable {
+    let value: Any
+
+    init(_ value: Any) {
+        self.value = value
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+
+        if let dict = try? container.decode([String: AnyCodable].self) {
+            self.value = dict.mapValues { $0.value }
+        } else if let array = try? container.decode([AnyCodable].self) {
+            self.value = array.map { $0.value }
+        } else if let string = try? container.decode(String.self) {
+            self.value = string
+        } else if let int = try? container.decode(Int.self) {
+            self.value = int
+        } else if let double = try? container.decode(Double.self) {
+            self.value = double
+        } else if let bool = try? container.decode(Bool.self) {
+            self.value = bool
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unsupported type")
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+
+        switch value {
+        case let dict as [String: Any]:
+            try container.encode(dict.mapValues { AnyCodable($0) })
+        case let array as [Any]:
+            try container.encode(array.map { AnyCodable($0) })
+        case let string as String:
+            try container.encode(string)
+        case let int as Int:
+            try container.encode(int)
+        case let double as Double:
+            try container.encode(double)
+        case let bool as Bool:
+            try container.encode(bool)
+        default:
+            throw EncodingError.invalidValue(value, EncodingError.Context(codingPath: container.codingPath, debugDescription: "Unsupported type"))
+        }
+    }
 }

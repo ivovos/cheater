@@ -28,8 +28,8 @@ struct QuizView: View {
                     // Question text
                     questionText
 
-                    // Answer options
-                    answerOptions
+                    // Answer input (varies by question type)
+                    answerInput
 
                     // Feedback
                     if viewModel.showFeedback {
@@ -95,9 +95,21 @@ struct QuizView: View {
             .padding(.vertical, AppSpacing.small)
     }
 
-    private var answerOptions: some View {
+    @ViewBuilder
+    private var answerInput: some View {
+        switch viewModel.currentQuestion.type {
+        case .mcq:
+            mcqOptions
+        case .fillBlank:
+            fillBlankInput
+        case .shortAnswer:
+            shortAnswerInput
+        }
+    }
+
+    private var mcqOptions: some View {
         VStack(spacing: AppSpacing.medium) {
-            ForEach(Array(viewModel.currentQuestion.options.enumerated()), id: \.offset) { index, option in
+            ForEach(Array((viewModel.currentQuestion.options ?? []).enumerated()), id: \.offset) { index, option in
                 AnswerButton(
                     text: option,
                     label: viewModel.currentQuestion.optionLabels[index],
@@ -113,10 +125,135 @@ struct QuizView: View {
         }
     }
 
+    private var fillBlankInput: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.medium) {
+            TextField("Your answer", text: $viewModel.textAnswer)
+                .textFieldStyle(.roundedBorder)
+                .font(AppTypography.body)
+                .disabled(viewModel.showFeedback)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .padding(.vertical, AppSpacing.small)
+
+            if !viewModel.showFeedback {
+                Button {
+                    viewModel.submitTextAnswer()
+                } label: {
+                    Text("Submit Answer")
+                        .font(AppTypography.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(viewModel.canSubmitAnswer ? Color.appPrimary : Color.gray)
+                        .cornerRadius(AppRadius.button)
+                }
+                .disabled(!viewModel.canSubmitAnswer)
+            } else {
+                // Show user's answer and correct answer
+                VStack(alignment: .leading, spacing: AppSpacing.small) {
+                    HStack {
+                        Text("Your answer:")
+                            .font(AppTypography.caption)
+                            .foregroundColor(.appTextSecondary)
+                        Text(viewModel.textAnswer)
+                            .font(AppTypography.body)
+                            .foregroundColor(viewModel.textAnswer.lowercased() == (viewModel.currentQuestion.correctAnswer?.lowercased() ?? "") ? .appSuccess : .appError)
+                    }
+                    HStack {
+                        Text("Correct answer:")
+                            .font(AppTypography.caption)
+                            .foregroundColor(.appTextSecondary)
+                        Text(viewModel.currentQuestion.correctAnswer ?? "")
+                            .font(AppTypography.body)
+                            .foregroundColor(.appSuccess)
+                    }
+                }
+                .padding()
+                .background(Color.appCardBackground)
+                .cornerRadius(AppRadius.medium)
+            }
+        }
+    }
+
+    private var shortAnswerInput: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.medium) {
+            Text("Provide a detailed answer:")
+                .font(AppTypography.caption)
+                .foregroundColor(.appTextSecondary)
+
+            TextEditor(text: $viewModel.textAnswer)
+                .frame(minHeight: 120)
+                .padding(8)
+                .background(Color.appCardBackground)
+                .cornerRadius(AppRadius.small)
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppRadius.small)
+                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                )
+                .disabled(viewModel.showFeedback)
+                .font(AppTypography.body)
+
+            if !viewModel.showFeedback {
+                Button {
+                    viewModel.submitTextAnswer()
+                } label: {
+                    Text("Submit Answer")
+                        .font(AppTypography.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(viewModel.canSubmitAnswer ? Color.appPrimary : Color.gray)
+                        .cornerRadius(AppRadius.button)
+                }
+                .disabled(!viewModel.canSubmitAnswer)
+            } else {
+                // Show user's answer and model answer
+                VStack(alignment: .leading, spacing: AppSpacing.small) {
+                    Text("Your answer:")
+                        .font(AppTypography.caption)
+                        .foregroundColor(.appTextSecondary)
+                    Text(viewModel.textAnswer)
+                        .font(AppTypography.body)
+                        .foregroundColor(.appTextPrimary)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.appCardBackground)
+                        .cornerRadius(AppRadius.small)
+
+                    Text("Model answer:")
+                        .font(AppTypography.caption)
+                        .foregroundColor(.appTextSecondary)
+                        .padding(.top, AppSpacing.small)
+                    Text(viewModel.currentQuestion.correctAnswer ?? "")
+                        .font(AppTypography.body)
+                        .foregroundColor(.appSuccess)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.appSuccess.opacity(0.1))
+                        .cornerRadius(AppRadius.small)
+                }
+            }
+        }
+    }
+
     private var feedbackSection: some View {
         VStack(spacing: AppSpacing.medium) {
+            let isCorrect: Bool = {
+                switch viewModel.currentQuestion.type {
+                case .mcq:
+                    return viewModel.selectedAnswer == viewModel.currentQuestion.correctIndex
+                case .fillBlank:
+                    return viewModel.textAnswer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == (viewModel.currentQuestion.correctAnswer?.lowercased() ?? "")
+                case .shortAnswer:
+                    // For short answer, be lenient
+                    let userAnswer = viewModel.textAnswer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                    let correctAnswer = (viewModel.currentQuestion.correctAnswer?.lowercased() ?? "")
+                    return !userAnswer.isEmpty && (userAnswer == correctAnswer || userAnswer.contains(correctAnswer))
+                }
+            }()
+
             FeedbackView(
-                isCorrect: viewModel.selectedAnswer == viewModel.currentQuestion.correctIndex,
+                isCorrect: isCorrect,
                 explanation: viewModel.currentQuestion.explanation
             )
             .transition(.opacity.combined(with: .move(edge: .top)))

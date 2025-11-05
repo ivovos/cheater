@@ -13,16 +13,27 @@ struct Quiz: Identifiable, Codable, Sendable {
     let questions: [Question]
     let createdAt: Date
 
+    // Classification metadata
+    let topic: String?
+    let subtopic: String?
+    let classificationConfidence: Double?
+
     init(
         id: UUID = UUID(),
         homeworkId: UUID,
         questions: [Question],
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        topic: String? = nil,
+        subtopic: String? = nil,
+        classificationConfidence: Double? = nil
     ) {
         self.id = id
         self.homeworkId = homeworkId
         self.questions = questions
         self.createdAt = createdAt
+        self.topic = topic
+        self.subtopic = subtopic
+        self.classificationConfidence = classificationConfidence
     }
 
     // Computed properties
@@ -32,6 +43,10 @@ struct Quiz: Identifiable, Codable, Sendable {
 
     var isValid: Bool {
         totalQuestions == 10 && questions.allSatisfy { $0.isValid }
+    }
+
+    var topicDisplay: String {
+        topic?.capitalized ?? "General"
     }
 }
 
@@ -81,14 +96,19 @@ extension Quiz {
 
 // MARK: - Claude API Response
 extension Quiz {
-    /// Structure for Claude API response
+    /// Structure for Claude API response (v2 with classification and multiple question types)
     struct ClaudeResponse: Codable, Sendable {
+        let topic: String?
+        let subtopic: String?
+        let confidence: Double?
         let questions: [ClaudeQuestion]
 
         struct ClaudeQuestion: Codable, Sendable {
+            let type: String?                // "mcq", "fillBlank", "shortAnswer"
             let question: String
-            let options: [String]
-            let correctIndex: Int
+            let options: [String]?           // Only for MCQ
+            let correctIndex: Int?           // Only for MCQ
+            let correctAnswer: String?       // For fillBlank and shortAnswer
             let explanation: String
         }
     }
@@ -98,12 +118,26 @@ extension Quiz {
         self.id = UUID()
         self.homeworkId = homeworkId
         self.createdAt = Date()
+        self.topic = response.topic
+        self.subtopic = response.subtopic
+        self.classificationConfidence = response.confidence
 
         self.questions = response.questions.map { claudeQ in
-            Question(
+            // Determine question type
+            let questionType: QuestionType
+            if let typeString = claudeQ.type {
+                questionType = QuestionType(rawValue: typeString) ?? .mcq
+            } else {
+                // Fallback: if has options, it's MCQ
+                questionType = claudeQ.options != nil ? .mcq : .fillBlank
+            }
+
+            return Question(
+                type: questionType,
                 question: claudeQ.question,
                 options: claudeQ.options,
                 correctIndex: claudeQ.correctIndex,
+                correctAnswer: claudeQ.correctAnswer,
                 explanation: claudeQ.explanation
             )
         }

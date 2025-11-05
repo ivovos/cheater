@@ -142,22 +142,44 @@ actor AIService {
         return quiz
     }
 
-    /// Generate quiz from homework image using Claude Vision
+    /// Generate quiz from homework image using Claude Vision with smart classification
     /// - Parameters:
     ///   - image: UIImage of homework
     ///   - subject: Optional subject hint
     /// - Returns: Generated Quiz
     /// - Throws: AIError if generation fails
     func generateQuiz(from image: UIImage, subject: String? = nil) async throws -> Quiz {
-        print("🖼️ Using Claude Vision to generate quiz from image")
+        print("🖼️ Using Claude Vision with smart classification to generate quiz")
 
-        // Convert image to base64
+        // Step 1: Perform local classification for topic hint
+        let classifier = ContentClassifier()
+        var detectedTopic = "generic"
+        var classificationConfidence = 0.5
+
+        do {
+            let classification = try await classifier.classifyImage(image)
+            detectedTopic = classification.topic
+            classificationConfidence = classification.confidence
+
+            print("🔍 Local classification: \(detectedTopic) (confidence: \(String(format: "%.2f", classificationConfidence)))")
+
+            // Only use detected topic if confidence is above threshold
+            if classificationConfidence < PromptManager.shared.classificationThreshold {
+                print("⚠️ Classification confidence below threshold, using generic prompt")
+                detectedTopic = "generic"
+            }
+        } catch {
+            print("⚠️ Classification failed, using generic prompt: \(error.localizedDescription)")
+            detectedTopic = "generic"
+        }
+
+        // Step 2: Convert image to base64
         let base64Image = try convertImageToBase64(image)
 
-        // Build vision prompt
-        let promptText = buildVisionPrompt(subject: subject)
+        // Step 3: Build topic-specific vision prompt
+        let promptText = buildVisionPrompt(subject: subject, topic: detectedTopic)
 
-        // Create request
+        // Step 4: Create request
         var request = URLRequest(url: apiURL)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -191,8 +213,8 @@ actor AIService {
 
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
 
-        // Make request
-        print("📡 Sending image to Claude Vision API...")
+        // Step 5: Make request
+        print("📡 Sending image to Claude Vision API with \(detectedTopic) prompt...")
         let (data, response) = try await URLSession.shared.data(for: request)
 
         // Validate response
@@ -214,9 +236,9 @@ actor AIService {
             throw AIError.invalidResponse
         }
 
-        // Parse response
+        // Step 6: Parse response (now includes topic validation from Claude)
         let quiz = try parseQuizResponse(data: data)
-        print("✅ Successfully generated quiz with \(quiz.questions.count) questions")
+        print("✅ Successfully generated \(quiz.questions.count) questions for topic: \(detectedTopic)")
 
         return quiz
     }
@@ -299,8 +321,8 @@ actor AIService {
         return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func buildVisionPrompt(subject: String?) -> String {
-        return PromptManager.shared.buildVisionPrompt(subject: subject)
+    private func buildVisionPrompt(subject: String?, topic: String = "generic") -> String {
+        return PromptManager.shared.buildVisionPrompt(subject: subject, topic: topic)
     }
 
     private func convertImageToBase64(_ image: UIImage) throws -> String {
