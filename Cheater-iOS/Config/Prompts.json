@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "description": "Claude AI prompts for quiz generation",
+  "prompts": {
+    "vision": {
+      "system": "You are an educational quiz generator for secondary school students.",
+      "user": {
+        "prefix": "Analyze this homework image and generate a 10-question multiple choice quiz from its content{subjectHint}.",
+        "instructions": [
+          "READ THE ENTIRE IMAGE CAREFULLY:",
+          "- Extract all text, including headings, questions, problems, and instructions",
+          "- Pay attention to mathematical equations, formulas, and diagrams",
+          "- Understand tables, lists, and formatted content",
+          "- Notice any special formatting or emphasized content"
+        ],
+        "requirements": [
+          "Exactly 10 questions",
+          "Each question has exactly 4 options (labeled A, B, C, D)",
+          "One correct answer per question",
+          "Questions test understanding, not just memorization",
+          "Appropriate difficulty for secondary school students",
+          "Include a brief (1-2 sentence) explanation for each correct answer",
+          "Questions should cover different aspects of the content",
+          "Avoid trick questions",
+          "Base questions on the ACTUAL content from the image"
+        ],
+        "format": {
+          "description": "Return ONLY a valid JSON object in this EXACT format (no markdown, no code blocks, just pure JSON):",
+          "example": {
+            "questions": [
+              {
+                "question": "What is...",
+                "options": [
+                  "Option A",
+                  "Option B",
+                  "Option C",
+                  "Option D"
+                ],
+                "correctIndex": 0,
+                "explanation": "Brief explanation..."
+              }
+            ]
+          }
+        },
+        "suffix": "IMPORTANT: Return ONLY the JSON object, nothing else. No explanations, no markdown formatting."
+      }
+    },
+    "text": {
+      "system": "You are an educational quiz generator for secondary school students.",
+      "user": {
+        "prefix": "Generate a 10-question multiple choice quiz from this homework content{subjectHint}:",
+        "requirements": [
+          "Exactly 10 questions",
+          "Each question has exactly 4 options (labeled A, B, C, D)",
+          "One correct answer per question",
+          "Questions test understanding, not just memorization",
+          "Appropriate difficulty for secondary school students",
+          "Include a brief (1-2 sentence) explanation for each correct answer",
+          "Questions should cover different aspects of the content",
+          "Avoid trick questions"
+        ],
+        "format": {
+          "description": "Return ONLY a valid JSON object in this EXACT format (no markdown, no code blocks, just pure JSON):",
+          "example": {
+            "questions": [
+              {
+                "question": "What is...",
+                "options": [
+                  "Option A",
+                  "Option B",
+                  "Option C",
+                  "Option D"
+                ],
+                "correctIndex": 0,
+                "explanation": "Brief explanation..."
+              }
+            ]
+          }
+        },
+        "suffix": "IMPORTANT: Return ONLY the JSON object, nothing else. No explanations, no markdown formatting."
+      }
+    }
+  },
+  "settings": {
+    "questionCount": 10,
+    "optionCount": 4,
+    "minExplanationLength": 1,
+    "maxExplanationLength": 2
+  }
+}

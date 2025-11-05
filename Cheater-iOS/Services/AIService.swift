@@ -224,39 +224,7 @@ actor AIService {
     // MARK: - Private Methods
 
     private func buildPrompt(text: String, subject: String?) -> String {
-        let subjectHint = subject.map { " about \($0)" } ?? ""
-
-        return """
-        You are an educational quiz generator for secondary school students.
-
-        Generate a 10-question multiple choice quiz from this homework content\(subjectHint):
-
-        \(text)
-
-        Requirements:
-        - Exactly 10 questions
-        - Each question has exactly 4 options (labeled A, B, C, D)
-        - One correct answer per question
-        - Questions test understanding, not just memorization
-        - Appropriate difficulty for secondary school students
-        - Include a brief (1-2 sentence) explanation for each correct answer
-        - Questions should cover different aspects of the content
-        - Avoid trick questions
-
-        Return ONLY a valid JSON object in this EXACT format (no markdown, no code blocks, just pure JSON):
-        {
-          "questions": [
-            {
-              "question": "What is...",
-              "options": ["Option A", "Option B", "Option C", "Option D"],
-              "correctIndex": 0,
-              "explanation": "Brief explanation..."
-            }
-          ]
-        }
-
-        IMPORTANT: Return ONLY the JSON object, nothing else. No explanations, no markdown formatting.
-        """
+        return PromptManager.shared.buildTextPrompt(text: text, subject: subject)
     }
 
     private func parseQuizResponse(data: Data) throws -> Quiz {
@@ -332,44 +300,7 @@ actor AIService {
     }
 
     private func buildVisionPrompt(subject: String?) -> String {
-        let subjectHint = subject.map { " about \($0)" } ?? ""
-
-        return """
-        You are an educational quiz generator for secondary school students.
-
-        Analyze this homework image and generate a 10-question multiple choice quiz from its content\(subjectHint).
-
-        READ THE ENTIRE IMAGE CAREFULLY:
-        - Extract all text, including headings, questions, problems, and instructions
-        - Pay attention to mathematical equations, formulas, and diagrams
-        - Understand tables, lists, and formatted content
-        - Notice any special formatting or emphasized content
-
-        Requirements:
-        - Exactly 10 questions
-        - Each question has exactly 4 options (labeled A, B, C, D)
-        - One correct answer per question
-        - Questions test understanding, not just memorization
-        - Appropriate difficulty for secondary school students
-        - Include a brief (1-2 sentence) explanation for each correct answer
-        - Questions should cover different aspects of the content
-        - Avoid trick questions
-        - Base questions on the ACTUAL content from the image
-
-        Return ONLY a valid JSON object in this EXACT format (no markdown, no code blocks, just pure JSON):
-        {
-          "questions": [
-            {
-              "question": "What is...",
-              "options": ["Option A", "Option B", "Option C", "Option D"],
-              "correctIndex": 0,
-              "explanation": "Brief explanation..."
-            }
-          ]
-        }
-
-        IMPORTANT: Return ONLY the JSON object, nothing else. No explanations, no markdown formatting.
-        """
+        return PromptManager.shared.buildVisionPrompt(subject: subject)
     }
 
     private func convertImageToBase64(_ image: UIImage) throws -> String {
