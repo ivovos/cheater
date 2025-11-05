@@ -71,11 +71,6 @@ struct ProcessingView: View {
     @ViewBuilder
     private var stateIcon: some View {
         switch state {
-        case .processingOCR:
-            Image(systemName: "doc.text.viewfinder")
-                .font(.system(size: 50))
-                .foregroundColor(.appPrimary)
-
         case .generatingQuiz:
             Image(systemName: "brain")
                 .font(.system(size: 50))
@@ -103,10 +98,8 @@ struct ProcessingView: View {
 
     private var detailMessage: String? {
         switch state {
-        case .processingOCR:
-            return "Reading text from your homework..."
         case .generatingQuiz:
-            return "Creating quiz questions with AI..."
+            return "Analyzing your homework with AI..."
         case .saving:
             return "Almost done..."
         case .completed:

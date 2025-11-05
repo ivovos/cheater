@@ -26,7 +26,6 @@ class CaptureFlowViewModel: ObservableObject {
     enum FlowState: Equatable {
         case idle
         case capturingImage
-        case processingOCR
         case generatingQuiz
         case saving
         case completed
@@ -34,7 +33,7 @@ class CaptureFlowViewModel: ObservableObject {
 
         var isProcessing: Bool {
             switch self {
-            case .processingOCR, .generatingQuiz, .saving:
+            case .generatingQuiz, .saving:
                 return true
             default:
                 return false
@@ -47,10 +46,8 @@ class CaptureFlowViewModel: ObservableObject {
                 return "Ready"
             case .capturingImage:
                 return "Capturing image..."
-            case .processingOCR:
-                return "Extracting text..."
             case .generatingQuiz:
-                return "Generating quiz..."
+                return "Generating quiz with AI..."
             case .saving:
                 return "Saving..."
             case .completed:
@@ -64,7 +61,6 @@ class CaptureFlowViewModel: ObservableObject {
     // MARK: - Dependencies
 
     private let persistenceController: PersistenceController
-    private let ocrService: OCRService
     private var aiServiceActor: AIService?
     private var useMockAI = false
 
@@ -72,7 +68,6 @@ class CaptureFlowViewModel: ObservableObject {
 
     init(persistenceController: PersistenceController = .shared) {
         self.persistenceController = persistenceController
-        self.ocrService = OCRService()
 
         // Try to create AI service
         // If no API key, we'll use mock data in debug mode
@@ -92,28 +87,22 @@ class CaptureFlowViewModel: ObservableObject {
     /// Start the capture flow with a selected image
     func processImage(_ image: UIImage, title: String = "Homework", subject: String? = nil) async {
         capturedImage = image
-        flowState = .processingOCR
+        flowState = .generatingQuiz
+        print("🚀 Starting Claude Vision quiz generation...")
 
         do {
-            // Step 1: Extract text with OCR
-            let text = try await ocrService.extractText(from: image)
-            extractedText = text
-
-            guard !text.isEmpty else {
-                throw CaptureError.noTextFound
-            }
-
-            // Step 2: Generate quiz with AI
-            flowState = .generatingQuiz
+            // Step 1: Generate quiz directly from image using Claude Vision
             let quiz: Quiz
 
             #if DEBUG
             if useMockAI {
                 // Use mock quiz for testing without API key
+                print("🧪 Using mock AI service")
                 try await Task.sleep(nanoseconds: 2_000_000_000) // Simulate 2s delay
                 quiz = Quiz(homeworkId: UUID(), questions: Question.sampleList)
             } else if let aiService = aiServiceActor {
-                quiz = try await aiService.generateQuiz(from: text, subject: subject)
+                // Use Claude Vision to generate quiz from image
+                quiz = try await aiService.generateQuiz(from: image, subject: subject)
             } else {
                 throw CaptureError.aiFailed("AI service not available")
             }
@@ -121,28 +110,27 @@ class CaptureFlowViewModel: ObservableObject {
             guard let aiService = aiServiceActor else {
                 throw CaptureError.aiFailed("AI service not configured")
             }
-            quiz = try await aiService.generateQuiz(from: text, subject: subject)
+            // Use Claude Vision to generate quiz from image
+            quiz = try await aiService.generateQuiz(from: image, subject: subject)
             #endif
 
-            // Step 3: Save to Core Data
+            // Step 2: Save to Core Data
             flowState = .saving
             try await saveHomework(
                 image: image,
-                ocrText: text,
+                ocrText: nil,  // No OCR text since we used vision directly
                 quiz: quiz,
                 title: title,
                 subject: subject
             )
             print("✅ Homework saved successfully")
 
-            // Step 4: Complete
+            // Step 3: Complete
             flowState = .completed
             print("✅ Capture flow completed")
 
         } catch let error as CaptureError {
             handleError(error)
-        } catch let error as OCRError {
-            handleError(.ocrFailed(error.localizedDescription))
         } catch let error as AIError {
             handleError(.aiFailed(error.localizedDescription))
         } catch {
@@ -163,7 +151,7 @@ class CaptureFlowViewModel: ObservableObject {
 
     private func saveHomework(
         image: UIImage,
-        ocrText: String,
+        ocrText: String?,
         quiz: Quiz,
         title: String,
         subject: String?

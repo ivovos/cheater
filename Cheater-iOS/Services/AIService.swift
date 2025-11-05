@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 // MARK: - AI Errors
 enum AIError: LocalizedError {
@@ -141,6 +142,85 @@ actor AIService {
         return quiz
     }
 
+    /// Generate quiz from homework image using Claude Vision
+    /// - Parameters:
+    ///   - image: UIImage of homework
+    ///   - subject: Optional subject hint
+    /// - Returns: Generated Quiz
+    /// - Throws: AIError if generation fails
+    func generateQuiz(from image: UIImage, subject: String? = nil) async throws -> Quiz {
+        print("🖼️ Using Claude Vision to generate quiz from image")
+
+        // Convert image to base64
+        let base64Image = try convertImageToBase64(image)
+
+        // Build vision prompt
+        let promptText = buildVisionPrompt(subject: subject)
+
+        // Create request
+        var request = URLRequest(url: apiURL)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+
+        // Build multimodal request body
+        let requestBody: [String: Any] = [
+            "model": model,
+            "max_tokens": maxTokens,
+            "messages": [
+                [
+                    "role": "user",
+                    "content": [
+                        [
+                            "type": "image",
+                            "source": [
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": base64Image
+                            ]
+                        ],
+                        [
+                            "type": "text",
+                            "text": promptText
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+
+        // Make request
+        print("📡 Sending image to Claude Vision API...")
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        // Validate response
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AIError.invalidResponse
+        }
+
+        switch httpResponse.statusCode {
+        case 200:
+            print("✅ Claude Vision API returned successfully")
+            break
+        case 429:
+            throw AIError.quotaExceeded
+        case 400..<500:
+            throw AIError.invalidRequest
+        case 500..<600:
+            throw AIError.serverError(httpResponse.statusCode)
+        default:
+            throw AIError.invalidResponse
+        }
+
+        // Parse response
+        let quiz = try parseQuizResponse(data: data)
+        print("✅ Successfully generated quiz with \(quiz.questions.count) questions")
+
+        return quiz
+    }
+
     // MARK: - Private Methods
 
     private func buildPrompt(text: String, subject: String?) -> String {
@@ -250,6 +330,89 @@ actor AIService {
 
         return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    private func buildVisionPrompt(subject: String?) -> String {
+        let subjectHint = subject.map { " about \($0)" } ?? ""
+
+        return """
+        You are an educational quiz generator for secondary school students.
+
+        Analyze this homework image and generate a 10-question multiple choice quiz from its content\(subjectHint).
+
+        READ THE ENTIRE IMAGE CAREFULLY:
+        - Extract all text, including headings, questions, problems, and instructions
+        - Pay attention to mathematical equations, formulas, and diagrams
+        - Understand tables, lists, and formatted content
+        - Notice any special formatting or emphasized content
+
+        Requirements:
+        - Exactly 10 questions
+        - Each question has exactly 4 options (labeled A, B, C, D)
+        - One correct answer per question
+        - Questions test understanding, not just memorization
+        - Appropriate difficulty for secondary school students
+        - Include a brief (1-2 sentence) explanation for each correct answer
+        - Questions should cover different aspects of the content
+        - Avoid trick questions
+        - Base questions on the ACTUAL content from the image
+
+        Return ONLY a valid JSON object in this EXACT format (no markdown, no code blocks, just pure JSON):
+        {
+          "questions": [
+            {
+              "question": "What is...",
+              "options": ["Option A", "Option B", "Option C", "Option D"],
+              "correctIndex": 0,
+              "explanation": "Brief explanation..."
+            }
+          ]
+        }
+
+        IMPORTANT: Return ONLY the JSON object, nothing else. No explanations, no markdown formatting.
+        """
+    }
+
+    private func convertImageToBase64(_ image: UIImage) throws -> String {
+        // Resize image if too large to reduce API costs
+        let maxDimension: CGFloat = 1568  // Claude recommended max
+        let resizedImage = resizeImage(image, maxDimension: maxDimension)
+
+        // Convert to JPEG with 80% quality for good balance of quality/size
+        guard let imageData = resizedImage.jpegData(compressionQuality: 0.8) else {
+            throw AIError.invalidRequest
+        }
+
+        print("📸 Image size: \(imageData.count / 1024)KB")
+
+        return imageData.base64EncodedString()
+    }
+
+    private func resizeImage(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
+        let size = image.size
+
+        // Check if resize needed
+        guard size.width > maxDimension || size.height > maxDimension else {
+            return image
+        }
+
+        // Calculate new size maintaining aspect ratio
+        let ratio = size.width / size.height
+        let newSize: CGSize
+
+        if size.width > size.height {
+            newSize = CGSize(width: maxDimension, height: maxDimension / ratio)
+        } else {
+            newSize = CGSize(width: maxDimension * ratio, height: maxDimension)
+        }
+
+        // Resize
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        defer { UIGraphicsEndImageContext() }
+
+        image.draw(in: CGRect(origin: .zero, size: newSize))
+
+        return UIGraphicsGetImageFromCurrentImageContext() ?? image
+    }
 }
 
 // MARK: - Mock Service for Testing
@@ -258,6 +421,19 @@ actor MockAIService {
     func generateQuiz(from text: String, subject: String? = nil) async throws -> Quiz {
         // Simulate API delay
         try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+
+        // Return sample quiz
+        return Quiz(
+            homeworkId: UUID(),
+            questions: Question.sampleList
+        )
+    }
+
+    func generateQuiz(from image: UIImage, subject: String? = nil) async throws -> Quiz {
+        // Simulate API delay for vision processing
+        try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+
+        print("🧪 Mock: Generating quiz from image")
 
         // Return sample quiz
         return Quiz(
