@@ -1,9 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="false" userDefinedModelVersionIdentifier="">
-    <entity name="Item" representedClassName="Item" syncable="YES" codeGenerationType="class">
-        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+
+    <!-- Homework Entity -->
+    <entity name="HomeworkEntity" representedClassName="HomeworkEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="subject" optional="YES" attributeType="String"/>
+        <attribute name="imageURL" attributeType="String"/>
+        <attribute name="ocrText" optional="YES" attributeType="String"/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="quiz" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="QuizEntity" inverseName="homework" inverseEntity="QuizEntity"/>
+        <relationship name="progress" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="ProgressEntity" inverseName="homework" inverseEntity="ProgressEntity"/>
     </entity>
+
+    <!-- Quiz Entity -->
+    <entity name="QuizEntity" representedClassName="QuizEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="questionsJSON" attributeType="Binary"/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="homework" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="HomeworkEntity" inverseName="quiz" inverseEntity="HomeworkEntity"/>
+    </entity>
+
+    <!-- Progress Entity -->
+    <entity name="ProgressEntity" representedClassName="ProgressEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="completionPercentage" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="bestScore" optional="YES" attributeType="Integer 16" usesScalarValueType="YES"/>
+        <attribute name="totalAttempts" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lastPlayedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="homework" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="HomeworkEntity" inverseName="progress" inverseEntity="HomeworkEntity"/>
+    </entity>
+
     <elements>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="44"/>
+        <element name="HomeworkEntity" positionX="-63" positionY="-18" width="128" height="149"/>
+        <element name="QuizEntity" positionX="144" positionY="-18" width="128" height="89"/>
+        <element name="ProgressEntity" positionX="-63" positionY="171" width="128" height="119"/>
     </elements>
 </model>
