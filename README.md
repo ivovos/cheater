@@ -1,195 +1,420 @@
-# cheater
-**Turn homework into fun quizzes**
+# Cheater
+**Turn homework into fun quizzes with AI**
 
-An iOS app that captures homework images, extracts text with OCR, generates interactive quizzes using AI, and tracks your progress.
+A cross-platform app that captures homework images and generates interactive quizzes using Claude Vision API. Track progress, master concepts, and make studying engaging.
+
+---
+
+## Overview
+
+Cheater helps students learn by transforming homework into personalized quizzes:
+- 📷 **Capture homework** via camera or photo library
+- 🧠 **AI quiz generation** using Claude Vision API (direct image-to-quiz)
+- 🎯 **Smart classification** with topic-specific prompts (maths, science, english, history)
+- 🎮 **Multiple question types** (MCQ, fill-in-blank, short answer)
+- 📊 **Progress tracking** with stats and best scores
+- 🎨 **Native feel** with smooth animations and haptics
+
+---
+
+## Repository Structure
+
+This is a **monorepo** containing multiple implementations:
+
+```
+cheater/
+├── Cheater-iOS/          # iOS native app (Swift + SwiftUI)
+├── Cheater-React/        # React Native app (planned - web + mobile)
+├── docs/                 # Comprehensive documentation (9 files)
+├── shared/config/        # Shared configuration (Prompts.json, TrainingData.json)
+└── README.md            # This file
+```
+
+### Current Implementations
+
+| Platform | Status | Tech Stack | Purpose |
+|----------|--------|------------|---------|
+| **iOS Native** | ✅ Active Development | Swift, SwiftUI, Core Data | Native iOS app with Claude Vision |
+| **React Native** | 📋 Planned | React Native, Expo, Supabase | Cross-platform (web + iOS + Android) |
+
+---
+
+## Quick Start
+
+### iOS App (Current)
+
+```bash
+# 1. Clone repository
+git clone https://github.com/ivovos/cheater.git
+cd cheater/Cheater-iOS
+
+# 2. Configure API key
+cp Config.example.plist Config.plist
+# Edit Config.plist and add your ANTHROPIC_API_KEY
+
+# 3. Open in Xcode
+open Cheater-iOS.xcodeproj
+
+# 4. Build and run (⌘R)
+```
+
+**Requirements:**
+- macOS Sonoma 14.0+
+- Xcode 15.0+
+- iOS 16.7.10+ device/simulator
+- Claude API key (get from [console.anthropic.com](https://console.anthropic.com))
+
+### React Native App (Planned)
+
+Coming soon. Will support:
+- Web deployment via Vercel
+- iOS/Android via Expo
+- Faster iteration with hot reload
+- Supabase backend (multi-user)
+
+---
+
+## Documentation
+
+Comprehensive documentation is available in the [`/docs`](./docs) folder:
+
+| File | Description |
+|------|-------------|
+| [00-OVERVIEW.md](./docs/00-OVERVIEW.md) | Project vision, features, tech stack, roadmap |
+| [01-DATA-MODELS.md](./docs/01-DATA-MODELS.md) | TypeScript/Swift interfaces for all models |
+| [02-API-INTEGRATION.md](./docs/02-API-INTEGRATION.md) | Claude Vision API integration details |
+| [03-PROMPTS-SYSTEM.md](./docs/03-PROMPTS-SYSTEM.md) | Smart prompts and classification system |
+| [04-DESIGN-SYSTEM.md](./docs/04-DESIGN-SYSTEM.md) | Colors, typography, animations, iOS patterns |
+| [05-UI-COMPONENTS.md](./docs/05-UI-COMPONENTS.md) | Component library specifications |
+| [06-USER-FLOWS.md](./docs/06-USER-FLOWS.md) | User journeys and interaction patterns |
+| [07-DATABASE-SCHEMA.md](./docs/07-DATABASE-SCHEMA.md) | Core Data + Supabase schemas |
+| [08-MIGRATION-GUIDE.md](./docs/08-MIGRATION-GUIDE.md) | iOS → React Native migration plan |
+
+### Shared Configuration
+
+The [`/shared/config`](./shared/config) folder contains configuration used by both implementations:
+
+- **Prompts.json** (v2.0.0): Topic-specific vision prompts for Claude API
+- **TrainingData.json** (v1.0.0): Example homework types for better detection
+- **README.md**: Configuration usage and update guide
+
+---
+
+## Technology Stack
+
+### iOS Implementation
+
+| Layer | Technology |
+|-------|-----------|
+| **Language** | Swift 5.9 |
+| **UI Framework** | SwiftUI |
+| **State Management** | Combine (@Published, ObservableObject) |
+| **Database** | Core Data (local, single-user) |
+| **AI Service** | Claude Vision API (Anthropic) |
+| **Image Processing** | UIKit (resize, JPEG compression) |
+| **Animations** | SwiftUI native animations |
+| **Architecture** | MVVM |
+
+### React Native Implementation (Planned)
+
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | React Native + Expo |
+| **Language** | TypeScript |
+| **UI Library** | react-native-reanimated, Framer Motion |
+| **State Management** | Zustand |
+| **Database** | Supabase (PostgreSQL with RLS) |
+| **AI Service** | Claude Vision API (Anthropic) |
+| **Image Processing** | expo-image-manipulator |
+| **Routing** | Expo Router (file-based) |
+| **Deployment** | Vercel (web), Expo (native) |
 
 ---
 
 ## Features
 
-- 📷 **Capture homework** via camera or photo library
-- 🔍 **OCR text extraction** using Apple Vision
-- 🤖 **AI quiz generation** with Claude API
-- 🎮 **Interactive quizzes** with immediate feedback
-- 📊 **Progress tracking** with stats and scores
-- 🎨 **Native iOS design** with Dark Mode support
+### Current (iOS)
 
----
+✅ **Smart Quiz Generation**
+- Direct image-to-quiz with Claude Vision API
+- Topic classification (maths, science, english, history, generic)
+- Multiple question types (MCQ, fill-blank, short answer)
+- Spelling list detection
 
-## Requirements
-
-- **macOS**: Sonoma 14.0+ (for Xcode 15)
-- **Xcode**: 15.0+
-- **iOS**: 16.7.10+ (minimum), 26.0 (target)
-- **Device**: iPhone 8 or later
-- **Claude API Key**: For quiz generation (optional for testing)
-
----
-
-## Setup
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/ivovos/cheater.git
-cd cheater
-```
-
-### 2. Open in Xcode
-
-```bash
-cd Cheater-iOS
-open Cheater-iOS.xcodeproj
-```
-
-### 3. Configure API Key (Optional)
-
-For quiz generation to work, you need a Claude API key:
-
-```bash
-# Copy the example config
-cp Cheater-iOS/Config.example.plist Cheater-iOS/Config.plist
-
-# Edit Config.plist and add your API key
-# <key>ANTHROPIC_API_KEY</key>
-# <string>your-api-key-here</string>
-```
-
-**Note:** Config.plist is gitignored and won't be committed.
-
-### 4. Build and Run
-
-1. Select your target device/simulator (iPhone 15 Pro recommended)
-2. Press **⌘R** to build and run
-3. The app will launch with sample homework data
-
----
-
-## Project Structure
-
-```
-Cheater-iOS/
-├── App/
-│   └── Cheater_iOSApp.swift          # App entry point
-├── Models/
-│   ├── Homework.swift                # Homework domain model
-│   ├── Quiz.swift                    # Quiz domain model
-│   └── Question.swift                # Question model
-├── ViewModels/
-│   ├── HomeworkListViewModel.swift   # List screen logic
-│   └── QuizViewModel.swift           # Quiz gameplay logic
-├── Views/
-│   ├── Homework/
-│   │   ├── HomeworkListView.swift    # Main list screen
-│   │   └── HomeworkDetailView.swift  # Homework detail
-│   ├── Quiz/
-│   │   ├── QuizView.swift            # Quiz gameplay
-│   │   └── QuizResultsView.swift     # Results screen
-│   └── Components/
-│       ├── HomeworkCardView.swift    # Card component
-│       ├── AnswerButton.swift        # Quiz answer button
-│       └── FeedbackView.swift        # Answer feedback
-├── Services/
-│   ├── OCRService.swift              # Text extraction
-│   └── AIService.swift               # Quiz generation
-├── CoreData/
-│   ├── Persistence.swift             # Core Data controller
-│   └── Cheater_iOS.xcdatamodeld      # Data model
-└── Design/
-    └── DesignTokens.swift            # Design system
-```
-
----
-
-## Architecture
-
-**Pattern:** MVVM (Model-View-ViewModel)
-
-- **Models:** Domain models (Homework, Quiz, Question)
-- **Views:** SwiftUI views (declarative UI)
-- **ViewModels:** Business logic and state management
-- **Services:** Reusable services (OCR, AI, Storage)
-
-**Data Storage:** Core Data (local, single user)
-
-**Key Technologies:**
-- SwiftUI for UI
-- Apple Vision for OCR
-- Claude API for AI quiz generation
-- Core Data for persistence
-- Combine for reactive state
-
----
-
-## Current Status
-
-### ✅ Completed (60%)
-- Foundation and architecture
-- Core Data models
-- OCR and AI services
-- Homework list UI
-- Quiz gameplay UI
-- Results screen
+✅ **Quiz Gameplay**
+- 10 questions per homework
+- Immediate feedback with explanations
+- Type-specific answer inputs
 - Progress tracking
+
+✅ **Progress & Stats**
+- Best score tracking
+- Completion percentage
+- Attempt history
+- Last played timestamp
+
+✅ **iOS Native Experience**
 - Dark mode support
+- Haptic feedback
+- Smooth spring animations
+- Native UI components
 
-### 🚧 In Progress (40%)
-- Camera capture flow
-- Image processing
-- End-to-end integration
-- Error handling
-- Loading states
+### Planned (React Native)
 
-See [PROGRESS_REPORT.md](PROGRESS_REPORT.md) for detailed status.
+📋 **Multi-user Support**
+- User authentication (Supabase Auth)
+- Cloud storage for homework images
+- Cross-device sync
 
----
+📋 **Web Access**
+- Play quizzes in browser
+- Responsive design
+- Easy sharing via URL
 
-## Usage
-
-### Playing with Sample Data
-
-The app comes with sample homework data:
-
-1. **Launch app** → See 3 sample homework items
-2. **Tap any homework** → View details
-3. **Tap "Start Quiz"** → Play 10-question quiz
-4. **Answer questions** → Get immediate feedback
-5. **Complete quiz** → See your score and stats
-
-### Adding New Homework (Coming Soon)
-
-1. Tap **+** button
-2. Choose camera or photo library
-3. Capture homework image
-4. Review and confirm
-5. Wait for quiz generation (10-15 seconds)
-6. Start playing!
+📋 **Enhanced Features**
+- Quiz attempt history
+- Detailed analytics
+- Custom quiz creation
+- Study streaks
 
 ---
 
-## Testing
+## Project Status
 
-### Unit Tests
+### iOS App Progress
 
-```bash
-# Run tests
-⌘U in Xcode
+| Component | Status | Completion |
+|-----------|--------|------------|
+| Data Models | ✅ Complete | 100% |
+| Core Data Schema | ✅ Complete | 100% |
+| AI Service (Vision API) | ✅ Complete | 100% |
+| Smart Classification | ✅ Complete | 100% |
+| UI Components | ✅ Complete | 100% |
+| Quiz Gameplay | ✅ Complete | 100% |
+| Results Screen | ✅ Complete | 100% |
+| Camera Capture | 🚧 In Progress | 80% |
+| Image Processing | 🚧 In Progress | 80% |
+| Error Handling | 🚧 In Progress | 70% |
 
-# Or via command line
-xcodebuild test -scheme Cheater-iOS -destination 'platform=iOS Simulator,name=iPhone 15'
+**Overall: ~90% Complete**
+
+### Documentation Progress
+
+| Document | Status |
+|----------|--------|
+| Data Models | ✅ Complete (782 lines) |
+| API Integration | ✅ Complete (791 lines) |
+| Prompts System | ✅ Complete (330 lines) |
+| Design System | ✅ Complete (699 lines) |
+| UI Components | ✅ Complete (663 lines) |
+| User Flows | ✅ Complete (588 lines) |
+| Database Schema | ✅ Complete (619 lines) |
+| Migration Guide | ✅ Complete (comprehensive) |
+
+**Total: 4,763+ lines of documentation**
+
+---
+
+## How It Works
+
+### 1. Camera Capture Flow
+
+```
+[Homework List] → Tap + button
+    ↓
+[Choose Source] → Camera or Photo Library
+    ↓
+[Capture/Select] → Take or choose homework image
+    ↓
+[AI Processing] → Claude Vision analyzes image (2-3 seconds)
+    │              - Classifies topic (maths, science, etc.)
+    │              - Detects question types needed
+    │              - Generates 10 questions
+    ↓
+[Quiz Ready] → Auto-navigate to quiz
+    ↓
+[Play Quiz]
 ```
 
-### UI Tests
+### 2. Quiz Gameplay
 
-```bash
-# Coming soon
-```
+**Three Question Types:**
 
-### Manual Testing
+1. **Multiple Choice (MCQ)**
+   - 4 options (A, B, C, D)
+   - Tap to select
+   - Immediate feedback with explanation
 
-- Test on iPhone 11 (iOS 16.7.10) - minimum version
-- Test on iPhone 15 Pro (iOS 26) - target version
-- Test in both Light and Dark mode
-- Test with various homework types
+2. **Fill in the Blank**
+   - Text input field
+   - Case-insensitive matching
+   - Show correct answer if wrong
+
+3. **Short Answer**
+   - Multi-line text editor
+   - Lenient matching (key concepts)
+   - Model answer comparison
+
+### 3. Progress Tracking
+
+After completing a quiz:
+- **Best Score**: Track your highest score (0-10)
+- **Completion %**: Based on best performance
+- **Total Attempts**: How many times you've played
+- **Last Played**: Timestamp of last attempt
 
 ---
+
+## API Integration
+
+### Claude Vision API
+
+The app uses Claude's multimodal Vision API to generate quizzes directly from images:
+
+**Request Format:**
+```json
+{
+  "model": "claude-3-5-sonnet-20241022",
+  "max_tokens": 4096,
+  "messages": [{
+    "role": "user",
+    "content": [
+      {
+        "type": "image",
+        "source": {
+          "type": "base64",
+          "media_type": "image/jpeg",
+          "data": "<base64-encoded-image>"
+        }
+      },
+      {
+        "type": "text",
+        "text": "Analyze this maths homework..."
+      }
+    ]
+  }]
+}
+```
+
+**Image Processing:**
+- Resize to max 1280px width
+- JPEG compression at 75% quality
+- Base64 encoding
+- ~100-200 KB per image
+
+**Cost:** ~$0.03-0.04 per quiz generation
+
+See [docs/02-API-INTEGRATION.md](./docs/02-API-INTEGRATION.md) for complete details.
+
+---
+
+## Contributing
+
+### For iOS Development
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Test thoroughly on iOS 16.7.10+ and iOS 26
+5. Commit with descriptive messages
+6. Push to your fork
+7. Open a Pull Request
+
+### For Documentation
+
+Documentation improvements are welcome! All docs are in `/docs` folder:
+- Follow existing markdown format
+- Include code examples
+- Update table of contents
+- Test all links
+
+---
+
+## Roadmap
+
+### Phase 1: iOS MVP ✅ (Current - 90% Complete)
+- [x] Core Data models
+- [x] Claude Vision API integration
+- [x] Smart topic classification
+- [x] Multiple question types
+- [x] Quiz gameplay UI
+- [x] Progress tracking
+- [ ] Camera capture flow (in progress)
+- [ ] End-to-end polish
+
+### Phase 2: React Native Port 📋 (Planned)
+- [ ] Expo project setup
+- [ ] Supabase backend
+- [ ] User authentication
+- [ ] Component migration
+- [ ] Web deployment (Vercel)
+- [ ] Cross-platform testing
+
+### Phase 3: Enhanced Features 🔮 (Future)
+- [ ] Quiz attempt history
+- [ ] Detailed analytics dashboard
+- [ ] Custom quiz creation
+- [ ] Study streaks and gamification
+- [ ] Social features (share quizzes)
+- [ ] Offline mode
+- [ ] Export to PDF
+
+---
+
+## Cost Structure
+
+### Development
+- **Claude API**: ~$0.03-0.04 per quiz
+- **Supabase** (React Native): Free tier (500MB storage, 2GB bandwidth)
+- **Vercel** (Web): Free tier (hobby projects)
+- **Expo** (Build service): Free tier (limited builds)
+
+### Per User (React Native)
+- **Storage**: ~1-2 MB per homework (images)
+- **Database**: ~10 KB per homework (metadata + quiz)
+- **API**: Variable based on quiz generation frequency
+
+See [docs/00-OVERVIEW.md](./docs/00-OVERVIEW.md#cost-analysis) for detailed breakdown.
+
+---
+
+## License
+
+This project is currently unlicensed. All rights reserved.
+
+---
+
+## Acknowledgments
+
+- **Claude API** by Anthropic for powerful vision-based quiz generation
+- **SwiftUI** by Apple for beautiful native iOS UI
+- **React Native** by Meta (planned) for cross-platform capabilities
+- **Supabase** (planned) for backend infrastructure
+
+---
+
+## Contact
+
+**Repository**: [github.com/ivovos/cheater](https://github.com/ivovos/cheater)
+
+For bugs, feature requests, or questions, please open an issue on GitHub.
+
+---
+
+## Next Steps
+
+### For iOS Development
+1. Complete camera capture flow
+2. Test end-to-end with real homework
+3. Polish error handling
+4. Add loading states
+5. Beta testing with students
+
+### For React Native Port
+1. Review [docs/08-MIGRATION-GUIDE.md](./docs/08-MIGRATION-GUIDE.md)
+2. Set up Expo project in `/Cheater-React`
+3. Configure Supabase backend
+4. Migrate components following design system
+5. Implement authentication
+
+**Start here**: [docs/00-OVERVIEW.md](./docs/00-OVERVIEW.md)

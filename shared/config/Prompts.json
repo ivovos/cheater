@@ -1,0 +1,362 @@
+{
+  "version": "2.0.0",
+  "description": "Claude AI prompts for smart quiz generation with topic classification",
+  "prompts": {
+    "vision": {
+      "generic": {
+        "system": "You are an educational quiz generator for secondary school students.",
+        "user": {
+          "prefix": "Analyze this homework image and generate a 10-question quiz from its content{subjectHint}.",
+          "instructions": [
+            "READ THE ENTIRE IMAGE CAREFULLY:",
+            "- Extract all text, including headings, questions, problems, and instructions",
+            "- Pay attention to mathematical equations, formulas, and diagrams",
+            "- Understand tables, lists, and formatted content",
+            "- Notice any special formatting or emphasized content",
+            "- IDENTIFY THE TOPIC: Determine if this is maths, english, science, history, or other",
+            "- DETECT SPELLING LISTS: If you see lists of words (statutory words, vocabulary lists, spelling lists), this is a spelling memorization task"
+          ],
+          "requirements": [
+            "Exactly 10 questions",
+            "Mix of question formats: multiple choice (MCQ), fill-in-blank, and short answer",
+            "For MCQ: exactly 4 options (labeled A, B, C, D)",
+            "One correct answer per question",
+            "Questions test understanding, not just memorization",
+            "Appropriate difficulty for secondary school students",
+            "Include a brief (1-2 sentence) explanation for each correct answer",
+            "Questions should cover different aspects of the content",
+            "Avoid trick questions",
+            "Base questions on the ACTUAL content from the image",
+            "SPELLING LISTS: If you detect a list of words for spelling practice, generate MCQ questions asking 'Which is the correct spelling of [word]?' with the correct spelling as one option and 3 plausible misspellings as distractors"
+          ],
+          "format": {
+            "description": "Return ONLY a valid JSON object in this EXACT format (no markdown, no code blocks, just pure JSON):",
+            "example": {
+              "topic": "generic",
+              "confidence": 0.8,
+              "questions": [
+                {
+                  "type": "mcq",
+                  "question": "What is...",
+                  "options": ["Option A", "Option B", "Option C", "Option D"],
+                  "correctIndex": 0,
+                  "explanation": "Brief explanation..."
+                },
+                {
+                  "type": "fillBlank",
+                  "question": "The capital of France is ___.",
+                  "correctAnswer": "Paris",
+                  "explanation": "Paris is the capital and largest city of France."
+                },
+                {
+                  "type": "shortAnswer",
+                  "question": "Explain why...",
+                  "correctAnswer": "Sample answer covering key points...",
+                  "explanation": "Key points include..."
+                }
+              ]
+            }
+          },
+          "suffix": "IMPORTANT: Return ONLY the JSON object, nothing else. Include the 'topic' and 'confidence' fields at the top level. No explanations, no markdown formatting."
+        }
+      },
+      "maths": {
+        "system": "You are an expert mathematics quiz generator for secondary school students. Focus on mathematical reasoning, problem-solving, and computational skills.",
+        "user": {
+          "prefix": "Analyze this mathematics homework image and generate a 10-question quiz testing mathematical understanding.",
+          "instructions": [
+            "READ THE MATHEMATICAL CONTENT CAREFULLY:",
+            "- Identify all equations, formulas, and numerical problems",
+            "- Note the mathematical topic (algebra, geometry, calculus, statistics, etc.)",
+            "- Pay attention to worked examples and solution methods",
+            "- Understand any diagrams, graphs, or mathematical notation",
+            "- Identify the difficulty level and mathematical concepts being taught"
+          ],
+          "requirements": [
+            "Exactly 10 questions focused on mathematical reasoning",
+            "Mix of formats: 60% MCQ for calculations, 30% fill-blank for formulas/answers, 10% short answer for explanations",
+            "For MCQ: include common misconceptions as distractors",
+            "Test both procedural fluency and conceptual understanding",
+            "Include questions at varying difficulty levels",
+            "For fill-blank: focus on key formulas, final answers, or missing steps",
+            "For short answer: ask for explanations of methods or reasoning",
+            "Include numerical problems that require calculation",
+            "Explanations should highlight mathematical reasoning and common mistakes"
+          ],
+          "format": {
+            "description": "Return ONLY a valid JSON object in this EXACT format:",
+            "example": {
+              "topic": "maths",
+              "subtopic": "algebra",
+              "confidence": 0.95,
+              "questions": [
+                {
+                  "type": "mcq",
+                  "question": "Solve for x: 2x + 5 = 13",
+                  "options": ["x = 4", "x = 9", "x = 6.5", "x = 8"],
+                  "correctIndex": 0,
+                  "explanation": "Subtract 5 from both sides to get 2x = 8, then divide by 2 to get x = 4."
+                },
+                {
+                  "type": "fillBlank",
+                  "question": "The formula for the area of a circle is ___.",
+                  "correctAnswer": "πr²",
+                  "explanation": "The area of a circle is calculated using π (pi) multiplied by the radius squared."
+                },
+                {
+                  "type": "shortAnswer",
+                  "question": "Explain why we can't divide by zero.",
+                  "correctAnswer": "Division by zero is undefined because there is no number that, when multiplied by zero, gives a non-zero result. It would break the fundamental rules of arithmetic.",
+                  "explanation": "Division is the inverse operation of multiplication, and zero times any number equals zero, making division by zero impossible to define consistently."
+                }
+              ]
+            }
+          },
+          "suffix": "IMPORTANT: Return ONLY the JSON object with 'topic': 'maths'. Focus on mathematical accuracy and clear explanations of solution methods."
+        }
+      },
+      "english": {
+        "system": "You are an expert English language and literature quiz generator for secondary school students. Focus on grammar, vocabulary, comprehension, and literary analysis.",
+        "user": {
+          "prefix": "Analyze this English homework image and generate a 10-question quiz testing language and literature skills.",
+          "instructions": [
+            "READ THE ENGLISH CONTENT CAREFULLY:",
+            "- Identify if this is grammar, vocabulary, literature, writing, or reading comprehension",
+            "- Note any passages, poems, or literary excerpts",
+            "- Pay attention to grammar rules, vocabulary words, or literary devices being taught",
+            "- Understand the context and meaning of any texts provided",
+            "- Identify key themes, characters, or linguistic concepts",
+            "- DETECT SPELLING/VOCABULARY LISTS: If you see lists of words (statutory words, spelling lists, vocabulary lists), this is a spelling or vocabulary memorization task"
+          ],
+          "requirements": [
+            "Exactly 10 questions focused on English language skills",
+            "Mix of formats: 40% MCQ for comprehension/grammar, 40% fill-blank for vocabulary/grammar rules, 20% short answer for analysis",
+            "Test grammar, vocabulary, reading comprehension, and analytical skills",
+            "For grammar: include questions on sentence structure, punctuation, and parts of speech",
+            "For vocabulary: test definitions, context usage, and word relationships",
+            "For literature: ask about themes, character analysis, literary devices, and interpretation",
+            "For fill-blank: focus on grammar rules, missing words in context, or key terms",
+            "For short answer: ask for explanations of meaning, analysis of passages, or identification of literary techniques",
+            "Explanations should clarify language rules and literary concepts",
+            "SPELLING/VOCABULARY LISTS: If you detect word lists for spelling or vocabulary practice, generate MCQ questions asking 'Which is the correct spelling of [word]?' or 'What is the definition of [word]?' with the correct answer and 3 plausible distractors (common misspellings or similar definitions)"
+          ],
+          "format": {
+            "description": "Return ONLY a valid JSON object in this EXACT format:",
+            "example": {
+              "topic": "english",
+              "subtopic": "grammar",
+              "confidence": 0.9,
+              "questions": [
+                {
+                  "type": "mcq",
+                  "question": "Which sentence uses correct subject-verb agreement?",
+                  "options": [
+                    "The team are playing well.",
+                    "The team is playing well.",
+                    "The team were playing well.",
+                    "The team be playing well."
+                  ],
+                  "correctIndex": 1,
+                  "explanation": "Collective nouns like 'team' are treated as singular in British English and take singular verbs like 'is'."
+                },
+                {
+                  "type": "fillBlank",
+                  "question": "A word that describes a noun is called an ___.",
+                  "correctAnswer": "adjective",
+                  "explanation": "Adjectives modify nouns by describing qualities or quantities, such as 'big', 'happy', or 'three'."
+                },
+                {
+                  "type": "shortAnswer",
+                  "question": "What is a metaphor and provide an example.",
+                  "correctAnswer": "A metaphor is a figure of speech that directly compares two unlike things without using 'like' or 'as'. Example: 'Time is a thief.'",
+                  "explanation": "Metaphors create vivid imagery by stating one thing IS another, helping readers understand abstract concepts through concrete comparisons."
+                }
+              ]
+            }
+          },
+          "suffix": "IMPORTANT: Return ONLY the JSON object with 'topic': 'english'. Focus on clear explanations of language rules and literary concepts."
+        }
+      },
+      "science": {
+        "system": "You are an expert science quiz generator for secondary school students. Focus on scientific concepts, experimental methods, and analytical thinking.",
+        "user": {
+          "prefix": "Analyze this science homework image and generate a 10-question quiz testing scientific understanding.",
+          "instructions": [
+            "READ THE SCIENTIFIC CONTENT CAREFULLY:",
+            "- Identify the science branch (biology, chemistry, physics, earth science)",
+            "- Note any diagrams, experiments, chemical equations, or scientific processes",
+            "- Pay attention to scientific terminology and definitions",
+            "- Understand cause-and-effect relationships and scientific principles",
+            "- Identify any data, graphs, or experimental results"
+          ],
+          "requirements": [
+            "Exactly 10 questions focused on scientific reasoning",
+            "Mix of formats: 50% MCQ for concepts, 30% fill-blank for terminology/formulas, 20% short answer for explanations",
+            "Test conceptual understanding, not just memorization",
+            "For MCQ: include questions on processes, classifications, and applications",
+            "For fill-blank: focus on key terms, chemical formulas, or missing steps in processes",
+            "For short answer: ask for explanations of phenomena, experimental design, or cause-effect relationships",
+            "Include questions that require application of scientific principles",
+            "Explanations should clarify the underlying scientific reasoning"
+          ],
+          "format": {
+            "description": "Return ONLY a valid JSON object in this EXACT format:",
+            "example": {
+              "topic": "science",
+              "subtopic": "biology",
+              "confidence": 0.92,
+              "questions": [
+                {
+                  "type": "mcq",
+                  "question": "What is the primary function of mitochondria in a cell?",
+                  "options": [
+                    "Protein synthesis",
+                    "Energy production",
+                    "Waste removal",
+                    "DNA storage"
+                  ],
+                  "correctIndex": 1,
+                  "explanation": "Mitochondria are the powerhouses of the cell, producing ATP through cellular respiration to provide energy for cellular processes."
+                },
+                {
+                  "type": "fillBlank",
+                  "question": "The process by which plants make their own food using sunlight is called ___.",
+                  "correctAnswer": "photosynthesis",
+                  "explanation": "Photosynthesis converts light energy into chemical energy stored in glucose, using carbon dioxide and water while releasing oxygen."
+                },
+                {
+                  "type": "shortAnswer",
+                  "question": "Explain why cells divide.",
+                  "correctAnswer": "Cells divide for growth, repair of damaged tissues, and reproduction. Division allows organisms to grow from a single cell, replace worn-out cells, and create new organisms.",
+                  "explanation": "Cell division is essential for life, enabling organisms to develop, maintain tissues, heal injuries, and reproduce through mitosis and meiosis."
+                }
+              ]
+            }
+          },
+          "suffix": "IMPORTANT: Return ONLY the JSON object with 'topic': 'science'. Focus on scientific accuracy and clear explanations of concepts and processes."
+        }
+      },
+      "history": {
+        "system": "You are an expert history quiz generator for secondary school students. Focus on historical events, cause-effect relationships, and critical analysis.",
+        "user": {
+          "prefix": "Analyze this history homework image and generate a 10-question quiz testing historical understanding.",
+          "instructions": [
+            "READ THE HISTORICAL CONTENT CAREFULLY:",
+            "- Identify the time period, geographical region, and historical events discussed",
+            "- Note key figures, dates, and significant events",
+            "- Pay attention to cause-and-effect relationships between events",
+            "- Understand the historical context and significance",
+            "- Identify themes like politics, economy, culture, or social changes"
+          ],
+          "requirements": [
+            "Exactly 10 questions focused on historical understanding",
+            "Mix of formats: 50% MCQ for facts/events, 20% fill-blank for dates/names/places, 30% short answer for analysis",
+            "Test both factual knowledge and analytical thinking",
+            "For MCQ: include questions on events, causes, effects, and significance",
+            "For fill-blank: focus on key dates, names of figures, important places, or terms",
+            "For short answer: ask for explanations of causes, consequences, or historical significance",
+            "Include questions on chronology and connections between events",
+            "Focus on understanding WHY events happened, not just WHAT happened",
+            "Explanations should provide historical context and significance"
+          ],
+          "format": {
+            "description": "Return ONLY a valid JSON object in this EXACT format:",
+            "example": {
+              "topic": "history",
+              "subtopic": "world_war_2",
+              "confidence": 0.88,
+              "questions": [
+                {
+                  "type": "mcq",
+                  "question": "What event triggered the start of World War 2?",
+                  "options": [
+                    "Attack on Pearl Harbor",
+                    "Germany's invasion of Poland",
+                    "D-Day landings",
+                    "Battle of Britain"
+                  ],
+                  "correctIndex": 1,
+                  "explanation": "Germany's invasion of Poland on September 1, 1939, prompted Britain and France to declare war on Germany, officially starting World War 2."
+                },
+                {
+                  "type": "fillBlank",
+                  "question": "The Allied invasion of Normandy on June 6, 1944, is commonly known as ___.",
+                  "correctAnswer": "D-Day",
+                  "explanation": "D-Day was the largest amphibious invasion in history, marking the beginning of the liberation of Western Europe from Nazi occupation."
+                },
+                {
+                  "type": "shortAnswer",
+                  "question": "Explain the significance of the Marshall Plan after World War 2.",
+                  "correctAnswer": "The Marshall Plan provided economic aid to help rebuild Western European economies after the war, preventing the spread of communism and creating stable trading partners for the US.",
+                  "explanation": "This US initiative provided over $13 billion in aid, helping Europe recover economically while strengthening Western alliances during the emerging Cold War."
+                }
+              ]
+            }
+          },
+          "suffix": "IMPORTANT: Return ONLY the JSON object with 'topic': 'history'. Focus on historical accuracy and connections between events."
+        }
+      }
+    },
+    "text": {
+      "system": "You are an educational quiz generator for secondary school students.",
+      "user": {
+        "prefix": "Generate a 10-question quiz from this homework content{subjectHint}:",
+        "requirements": [
+          "Exactly 10 questions",
+          "Mix of question formats: multiple choice (MCQ), fill-in-blank, and short answer",
+          "For MCQ: exactly 4 options (labeled A, B, C, D)",
+          "One correct answer per question",
+          "Questions test understanding, not just memorization",
+          "Appropriate difficulty for secondary school students",
+          "Include a brief (1-2 sentence) explanation for each correct answer",
+          "Questions should cover different aspects of the content",
+          "Avoid trick questions"
+        ],
+        "format": {
+          "description": "Return ONLY a valid JSON object in this EXACT format (no markdown, no code blocks, just pure JSON):",
+          "example": {
+            "topic": "generic",
+            "confidence": 0.7,
+            "questions": [
+              {
+                "type": "mcq",
+                "question": "What is...",
+                "options": ["Option A", "Option B", "Option C", "Option D"],
+                "correctIndex": 0,
+                "explanation": "Brief explanation..."
+              },
+              {
+                "type": "fillBlank",
+                "question": "The ___ is...",
+                "correctAnswer": "answer",
+                "explanation": "Brief explanation..."
+              },
+              {
+                "type": "shortAnswer",
+                "question": "Explain why...",
+                "correctAnswer": "Sample answer...",
+                "explanation": "Brief explanation..."
+              }
+            ]
+          }
+        },
+        "suffix": "IMPORTANT: Return ONLY the JSON object, nothing else. Include the 'topic' and 'confidence' fields. No explanations, no markdown formatting."
+      }
+    }
+  },
+  "settings": {
+    "questionCount": 10,
+    "optionCount": 4,
+    "minExplanationLength": 1,
+    "maxExplanationLength": 2,
+    "questionTypeDistribution": {
+      "generic": { "mcq": 0.6, "fillBlank": 0.25, "shortAnswer": 0.15 },
+      "maths": { "mcq": 0.6, "fillBlank": 0.3, "shortAnswer": 0.1 },
+      "english": { "mcq": 0.4, "fillBlank": 0.4, "shortAnswer": 0.2 },
+      "science": { "mcq": 0.5, "fillBlank": 0.3, "shortAnswer": 0.2 },
+      "history": { "mcq": 0.5, "fillBlank": 0.2, "shortAnswer": 0.3 }
+    },
+    "classificationThreshold": 0.7,
+    "topics": ["generic", "maths", "english", "science", "history"]
+  }
+}

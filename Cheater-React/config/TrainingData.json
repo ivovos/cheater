@@ -1,0 +1,362 @@
+{
+  "version": "1.0.0",
+  "description": "Training examples for automatic quiz format selection based on homework type",
+  "examples": [
+    {
+      "id": "spelling-list",
+      "name": "Spelling/Vocabulary List",
+      "description": "Lists of words for spelling or vocabulary memorization",
+      "indicators": [
+        "Vertical or horizontal list of words",
+        "Header like 'Spelling Words', 'Statutory Words', 'Vocabulary', 'Word List'",
+        "Words numbered or bulleted",
+        "Little to no context or sentences",
+        "Often 10-20 words in isolation"
+      ],
+      "recommendedDistribution": {
+        "mcq": 0.9,
+        "fillBlank": 0.1,
+        "shortAnswer": 0.0
+      },
+      "questionStrategy": {
+        "mcq": "Ask 'Which is the correct spelling of [word]?' with correct spelling and 3 common misspellings as options. Misspellings should be plausible (e.g., swapping ie/ei, doubling consonants incorrectly, silent letter errors).",
+        "fillBlank": "Provide a sentence with the word blanked out: 'Complete the sentence: The ___ was very important.' Expected answer: 'necessary' (if that's the word being tested).",
+        "shortAnswer": "Not recommended for spelling lists"
+      },
+      "exampleHomework": "Spelling Words for Week 5:\n1. necessary\n2. separate\n3. definitely\n4. embarrass\n5. receive\n6. occurrence\n7. accommodation\n8. beginning\n9. privilege\n10. maintenance",
+      "exampleQuestions": [
+        {
+          "type": "mcq",
+          "question": "Which is the correct spelling?",
+          "options": ["necessary", "neccessary", "necesary", "neccesary"],
+          "correctIndex": 0,
+          "explanation": "The correct spelling is 'necessary' - one 'c' and two 's's."
+        },
+        {
+          "type": "mcq",
+          "question": "Which is the correct spelling?",
+          "options": ["definately", "definetly", "definitely", "definitly"],
+          "correctIndex": 2,
+          "explanation": "The correct spelling is 'definitely' - it comes from 'definite' plus 'ly'."
+        }
+      ]
+    },
+    {
+      "id": "maths-worksheet",
+      "name": "Mathematics Problem Set",
+      "description": "Set of mathematical problems to solve",
+      "indicators": [
+        "Mathematical notation (×, ÷, =, +, −)",
+        "Numbers and equations",
+        "Word problems with numerical data",
+        "Geometric diagrams or graphs",
+        "Instructions like 'Solve', 'Calculate', 'Find the value of'"
+      ],
+      "recommendedDistribution": {
+        "mcq": 0.5,
+        "fillBlank": 0.4,
+        "shortAnswer": 0.1
+      },
+      "questionStrategy": {
+        "mcq": "Present calculation problems with answer options. Include common mistakes as distractors (e.g., forgetting to carry, wrong operation, sign errors).",
+        "fillBlank": "Ask for final numerical answer: 'What is the value of x? x = ___' or formulas: 'The formula for area of a circle is ___.'",
+        "shortAnswer": "Ask students to explain their reasoning or method: 'Explain how you would solve this problem' or 'Why is this the correct answer?'"
+      },
+      "exampleHomework": "Solve the following equations:\n1. 2x + 5 = 13\n2. 3(x - 4) = 15\n3. Find the area of a circle with radius 5cm\n4. What is 15% of 80?",
+      "exampleQuestions": [
+        {
+          "type": "mcq",
+          "question": "Solve for x: 2x + 5 = 13",
+          "options": ["x = 4", "x = 9", "x = 6.5", "x = 8"],
+          "correctIndex": 0,
+          "explanation": "Subtract 5 from both sides to get 2x = 8, then divide by 2 to get x = 4."
+        },
+        {
+          "type": "fillBlank",
+          "question": "The formula for the area of a circle is ___.",
+          "correctAnswer": "πr²",
+          "explanation": "The area of a circle is π (pi) multiplied by the radius squared."
+        }
+      ]
+    },
+    {
+      "id": "reading-comprehension",
+      "name": "Reading Comprehension Passage",
+      "description": "Text passage with comprehension questions",
+      "indicators": [
+        "Multi-paragraph text passage",
+        "Story, article, or informational text",
+        "May include questions at the end",
+        "Author name or source citation",
+        "Literary or factual content"
+      ],
+      "recommendedDistribution": {
+        "mcq": 0.4,
+        "fillBlank": 0.2,
+        "shortAnswer": 0.4
+      },
+      "questionStrategy": {
+        "mcq": "Ask about main ideas, character motivations, vocabulary in context, or factual details from the passage.",
+        "fillBlank": "Quote a sentence from the passage with a key word removed: 'In the passage, the author describes the setting as ___ and mysterious.'",
+        "shortAnswer": "Ask for analysis, inference, or interpretation: 'What is the author's main argument?' or 'How does the character change throughout the story?'"
+      },
+      "exampleHomework": "[A 3-paragraph passage about climate change, followed by 'Answer the following questions about the passage']",
+      "exampleQuestions": [
+        {
+          "type": "mcq",
+          "question": "What is the main idea of the passage?",
+          "options": [
+            "Climate change affects weather patterns",
+            "Scientists study the environment",
+            "Ice caps are melting",
+            "People should recycle more"
+          ],
+          "correctIndex": 0,
+          "explanation": "The passage primarily discusses how climate change impacts weather patterns globally."
+        },
+        {
+          "type": "shortAnswer",
+          "question": "According to the passage, what are two effects of rising global temperatures?",
+          "correctAnswer": "Rising sea levels and more extreme weather events",
+          "explanation": "The passage mentions both melting ice causing sea level rise and increased frequency of hurricanes and droughts."
+        }
+      ]
+    },
+    {
+      "id": "grammar-exercises",
+      "name": "Grammar Practice Sheet",
+      "description": "Exercises focused on grammar rules, sentence structure, or punctuation",
+      "indicators": [
+        "Instructions like 'Underline the verb', 'Circle the adjective', 'Correct the sentence'",
+        "Example sentences with grammatical focus",
+        "Lists of sentence types or grammar terms",
+        "Focus on parts of speech, tenses, or punctuation"
+      ],
+      "recommendedDistribution": {
+        "mcq": 0.5,
+        "fillBlank": 0.4,
+        "shortAnswer": 0.1
+      },
+      "questionStrategy": {
+        "mcq": "Ask to identify correct grammar usage: 'Which sentence uses correct subject-verb agreement?' with correct and incorrect options.",
+        "fillBlank": "Provide sentence with missing word: 'She ___ to the store yesterday.' (Answer: went) or definitions: 'A word that describes a noun is called an ___.' (Answer: adjective)",
+        "shortAnswer": "Ask for explanations: 'Explain what a compound sentence is and give an example.'"
+      },
+      "exampleHomework": "Grammar Practice:\n1. Identify the verb in each sentence\n2. Correct the punctuation errors\n3. Choose the correct form: Their/There/They're",
+      "exampleQuestions": [
+        {
+          "type": "mcq",
+          "question": "Which sentence uses correct subject-verb agreement?",
+          "options": [
+            "The team are playing well.",
+            "The team is playing well.",
+            "The team were playing well.",
+            "The team be playing well."
+          ],
+          "correctIndex": 1,
+          "explanation": "Collective nouns like 'team' are treated as singular and take singular verbs like 'is'."
+        },
+        {
+          "type": "fillBlank",
+          "question": "Complete the sentence: ___ going to the park later.",
+          "correctAnswer": "They're",
+          "explanation": "'They're' (they are) is the correct contraction to use when referring to people going somewhere."
+        }
+      ]
+    },
+    {
+      "id": "science-diagram",
+      "name": "Science Diagram/Process",
+      "description": "Labeled diagrams, processes, or scientific concepts",
+      "indicators": [
+        "Diagrams with labels (cell parts, plant structure, water cycle)",
+        "Process arrows showing steps or cycles",
+        "Scientific terminology and definitions",
+        "Instructions like 'Label the diagram', 'Describe the process'",
+        "May include experimental procedures"
+      ],
+      "recommendedDistribution": {
+        "mcq": 0.5,
+        "fillBlank": 0.3,
+        "shortAnswer": 0.2
+      },
+      "questionStrategy": {
+        "mcq": "Ask about functions, processes, or classifications: 'What is the function of mitochondria?' or 'Which part of the plant absorbs water?'",
+        "fillBlank": "Ask for labels or key terms: 'The process by which plants make food is called ___.' or 'The ___ is the control center of the cell.'",
+        "shortAnswer": "Ask for explanations of processes or phenomena: 'Explain how photosynthesis works' or 'Describe the water cycle.'"
+      },
+      "exampleHomework": "[Diagram of a plant cell with parts labeled: nucleus, cell wall, chloroplast, vacuole, mitochondria]\nQuestions:\n1. What is the function of each part?\n2. What is photosynthesis?",
+      "exampleQuestions": [
+        {
+          "type": "mcq",
+          "question": "What is the primary function of chloroplasts?",
+          "options": [
+            "Store water and nutrients",
+            "Produce energy through photosynthesis",
+            "Control cell activities",
+            "Provide structural support"
+          ],
+          "correctIndex": 1,
+          "explanation": "Chloroplasts contain chlorophyll and are responsible for photosynthesis, converting light energy into chemical energy."
+        },
+        {
+          "type": "fillBlank",
+          "question": "The ___ is the control center of the cell that contains DNA.",
+          "correctAnswer": "nucleus",
+          "explanation": "The nucleus contains genetic material and controls cell activities."
+        }
+      ]
+    },
+    {
+      "id": "history-timeline",
+      "name": "Historical Events/Timeline",
+      "description": "Historical events, dates, causes and effects",
+      "indicators": [
+        "Dates and time periods (1914-1918, Ancient Rome, Victorian Era)",
+        "Names of historical figures or events",
+        "Timeline format or chronological order",
+        "Cause-and-effect relationships",
+        "Questions about significance or impact"
+      ],
+      "recommendedDistribution": {
+        "mcq": 0.5,
+        "fillBlank": 0.2,
+        "shortAnswer": 0.3
+      },
+      "questionStrategy": {
+        "mcq": "Ask about dates, events, causes, or significance: 'What event started World War 1?' or 'Who was the first emperor of Rome?'",
+        "fillBlank": "Ask for dates, names, or key terms: 'World War 2 ended in the year ___.' or 'The ___ Revolution began in France in 1789.'",
+        "shortAnswer": "Ask for explanations of causes, effects, or significance: 'Explain why the Industrial Revolution began in Britain' or 'What were the consequences of...?'"
+      },
+      "exampleHomework": "World War 2 Timeline:\n- 1939: Germany invades Poland\n- 1941: Pearl Harbor attacked\n- 1944: D-Day invasion\n- 1945: War ends\nQuestions about causes and effects",
+      "exampleQuestions": [
+        {
+          "type": "mcq",
+          "question": "What event triggered the start of World War 2?",
+          "options": [
+            "Attack on Pearl Harbor",
+            "Germany's invasion of Poland",
+            "D-Day landings",
+            "Battle of Britain"
+          ],
+          "correctIndex": 1,
+          "explanation": "Germany's invasion of Poland on September 1, 1939, prompted Britain and France to declare war on Germany."
+        },
+        {
+          "type": "shortAnswer",
+          "question": "Explain the significance of the D-Day invasion.",
+          "correctAnswer": "D-Day marked the beginning of the liberation of Western Europe from Nazi occupation and opened a second front against Germany.",
+          "explanation": "The Normandy invasion on June 6, 1944, was the largest amphibious assault in history and a turning point in the war."
+        }
+      ]
+    },
+    {
+      "id": "vocabulary-context",
+      "name": "Vocabulary in Context",
+      "description": "Vocabulary words with definitions, synonyms, or usage examples",
+      "indicators": [
+        "List of vocabulary words with definitions",
+        "Words used in example sentences",
+        "Synonyms or antonyms provided",
+        "Instructions to use words in sentences",
+        "May include word origins or parts of speech"
+      ],
+      "recommendedDistribution": {
+        "mcq": 0.6,
+        "fillBlank": 0.3,
+        "shortAnswer": 0.1
+      },
+      "questionStrategy": {
+        "mcq": "Ask for definitions, synonyms, or correct usage: 'What does [word] mean?' or 'Which word is a synonym for [word]?' or 'Which sentence uses [word] correctly?'",
+        "fillBlank": "Provide sentence with vocabulary word missing: 'The scientist's ___ discovery changed our understanding.' (Answer: groundbreaking)",
+        "shortAnswer": "Ask students to write original sentences using the word or explain its meaning in their own words."
+      },
+      "exampleHomework": "Vocabulary Words:\n1. Benevolent (adj.) - kind and generous\n2. Meticulous (adj.) - very careful and precise\n3. Resilient (adj.) - able to recover quickly from difficulties\n4. Ambiguous (adj.) - having more than one possible meaning",
+      "exampleQuestions": [
+        {
+          "type": "mcq",
+          "question": "What does 'meticulous' mean?",
+          "options": [
+            "Very fast and efficient",
+            "Very careful and precise",
+            "Very loud and noticeable",
+            "Very old and ancient"
+          ],
+          "correctIndex": 1,
+          "explanation": "'Meticulous' means showing great attention to detail; very careful and precise."
+        },
+        {
+          "type": "fillBlank",
+          "question": "The ___ queen was loved by her people for her generosity and kindness.",
+          "correctAnswer": "benevolent",
+          "explanation": "'Benevolent' means kind and generous, fitting the description of a queen loved for these qualities."
+        }
+      ]
+    }
+  ],
+  "selectionCriteria": {
+    "description": "How to automatically select the best quiz format based on homework content",
+    "rules": [
+      {
+        "priority": 1,
+        "condition": "Image contains vertical/horizontal list of words with headers like 'Spelling Words', 'Statutory Words', 'Word List'",
+        "action": "Use spelling-list example",
+        "confidence": 0.95
+      },
+      {
+        "priority": 2,
+        "condition": "Image contains mathematical notation (equations, formulas, numbers, graphs) OR headers like 'Maths', 'Algebra', 'Geometry'",
+        "action": "Use maths-worksheet example",
+        "confidence": 0.9
+      },
+      {
+        "priority": 3,
+        "condition": "Image contains multi-paragraph text passage followed by questions OR narrative/informational text",
+        "action": "Use reading-comprehension example",
+        "confidence": 0.85
+      },
+      {
+        "priority": 4,
+        "condition": "Image contains grammar instructions (underline verb, circle adjective, correct punctuation) OR focus on sentence structure",
+        "action": "Use grammar-exercises example",
+        "confidence": 0.85
+      },
+      {
+        "priority": 5,
+        "condition": "Image contains labeled diagrams (cell, plant, water cycle) OR scientific processes/terminology",
+        "action": "Use science-diagram example",
+        "confidence": 0.85
+      },
+      {
+        "priority": 6,
+        "condition": "Image contains dates, historical events, timelines, or names of historical figures",
+        "action": "Use history-timeline example",
+        "confidence": 0.8
+      },
+      {
+        "priority": 7,
+        "condition": "Image contains vocabulary words with definitions, synonyms, or example sentences",
+        "action": "Use vocabulary-context example",
+        "confidence": 0.85
+      },
+      {
+        "priority": 8,
+        "condition": "No clear match to above patterns",
+        "action": "Use generic balanced distribution (60% MCQ, 25% fill-blank, 15% short-answer)",
+        "confidence": 0.5
+      }
+    ]
+  },
+  "usage": {
+    "description": "How to use this training data",
+    "instructions": [
+      "When analyzing homework, check indicators against each example type",
+      "Select the example with the highest confidence match",
+      "Use the recommendedDistribution to determine question type mix",
+      "Follow the questionStrategy for each question type",
+      "Refer to exampleQuestions for format and quality guidance",
+      "Multiple example types may apply - use best judgment to combine strategies",
+      "Always prioritize the actual content over rigid adherence to distributions"
+    ]
+  }
+}
