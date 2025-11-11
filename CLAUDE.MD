@@ -28,28 +28,21 @@ When working on this project, **ALWAYS** consult these documentation files in or
 
 ### Technology Stack
 
-#### Current (iOS)
+#### iOS Native
 - **Language**: Swift 5.9+
 - **UI**: SwiftUI
 - **State**: @Published, @StateObject
 - **Async**: Swift Concurrency (async/await, Actor)
 - **Database**: Core Data
 - **API**: Claude Vision API (Anthropic)
-
-#### React Native (In Progress → MVP Complete)
-- **Language**: TypeScript
-- **UI**: React Native + Expo
-- **State**: Zustand
-- **Database**: Supabase (PostgreSQL)
-- **Navigation**: Expo Router
-- **Status**: Full MVP complete with all core features working
+- **Status**: Production-ready MVP
 
 #### Next.js Web (Current → Active Development)
 - **Framework**: Next.js 16 with App Router + Turbopack
 - **Language**: TypeScript
 - **UI**: React + Tailwind CSS v4 + Radix UI
-- **State**: Zustand (shared with React Native)
-- **Database**: Supabase (PostgreSQL) - shared with React Native
+- **State**: Zustand
+- **Database**: Supabase (PostgreSQL)
 - **Animations**: Framer Motion
 - **Design**: Headway-inspired (modern consumer web app)
 - **Responsive**: Desktop sidebar + Mobile bottom nav
@@ -66,7 +59,7 @@ When working on this project, **ALWAYS** consult these documentation files in or
 ### Key Services
 - **AIService**: Claude Vision API integration, image processing, quiz generation
 - **PromptManager**: Loads and builds topic-specific prompts from `shared/config/Prompts.json`
-- **PersistenceController**: Core Data management (iOS) or Supabase (React Native)
+- **PersistenceController**: Core Data management (iOS) or Supabase (Web)
 
 ## Data Models
 
@@ -504,7 +497,7 @@ Project/
 - **Properties**: camelCase (e.g., `bestScore`, `totalAttempts`)
 - **Constants**: camelCase with `let` (e.g., `let apiURL`)
 
-#### TypeScript/React Native/Next.js Web
+#### TypeScript/Next.js Web
 - **Files**: PascalCase for components (e.g., `HomeworkCard.tsx`)
 - **Files**: camelCase for services (e.g., `aiService.ts`)
 - **Files**: `page.tsx` for Next.js routes (convention)
@@ -513,59 +506,21 @@ Project/
 - **Components**: PascalCase (e.g., `HomeworkCard`, `AnswerButton`)
 - **Hooks**: camelCase with `use` prefix (e.g., `useColors()`, `useHomeworkStore()`)
 
-### Code Sharing: React Native vs Next.js Web
+### Web Architecture (Next.js)
 
-**Shared Code** (identical in both):
+The web application uses modern React patterns with Next.js:
+
+**Core Technologies**:
 - **Types**: `types/index.ts` - All TypeScript interfaces
-- **Stores**: `stores/*.ts` - Zustand state management (identical API)
-- **Services**: `services/*DB.ts` - Supabase CRUD operations (identical)
+- **Stores**: `stores/*.ts` - Zustand state management
+- **Services**: `services/*DB.ts` - Supabase CRUD operations
 - **Data Models**: Homework, Quiz, Question validation logic
 
-**Platform-Specific Code**:
-- **UI Components**: React Native uses `View`, `Text`, `StyleSheet`; Next.js uses HTML + Tailwind
-- **Navigation**: React Native uses Expo Router; Next.js uses built-in routing
-- **Image Processing**: React Native uses native modules; Next.js uses Canvas API
-- **API Calls**: React Native calls Claude directly; Next.js uses server-side proxy
-
-**Example: Shared Zustand Store**
-```typescript
-// ✅ This code works in BOTH React Native and Next.js
-import { create } from 'zustand';
-
-export const useHomeworkStore = create<HomeworkState>((set) => ({
-  homework: [],
-  isLoading: false,
-
-  loadHomework: async () => {
-    set({ isLoading: true });
-    const homework = await HomeworkDB.getAll();  // Works in both!
-    set({ homework, isLoading: false });
-  }
-}));
-```
-
-**Example: Platform-Specific UI**
-```typescript
-// React Native
-import { View, Text, StyleSheet } from 'react-native';
-
-export const HomeworkCard = ({ homework }) => (
-  <View style={styles.card}>
-    <Text style={styles.title}>{homework.title}</Text>
-  </View>
-);
-
-const styles = StyleSheet.create({
-  card: { padding: 16, borderRadius: 12 }
-});
-
-// Next.js Web
-export const HomeworkCard = ({ homework }) => (
-  <div className="p-4 rounded-xl bg-white shadow-sm">
-    <h3 className="text-lg font-semibold">{homework.title}</h3>
-  </div>
-);
-```
+**Key Patterns**:
+- **Server Components**: Default for pages, can access server-side APIs
+- **Client Components**: Use `'use client'` directive for interactivity
+- **API Routes**: Server-side endpoints in `app/api/`
+- **Image Processing**: Browser-based Canvas API for resizing
 
 ### Code Style
 
@@ -590,25 +545,16 @@ struct HomeworkCardView: View {
 }
 ```
 
-#### React Native Components
+#### Next.js Web Components
 ```typescript
 export const HomeworkCard: React.FC<{ homework: Homework }> = ({ homework }) => {
-  const colors = useColors();
-
   return (
-    <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
-      {/* Content */}
-    </View>
+    <div className="p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
+      <h3 className="text-lg font-semibold">{homework.title}</h3>
+      {/* More content */}
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    padding: Spacing.medium,
-    borderRadius: Radius.card,
-    ...Shadow.card
-  }
-});
 ```
 
 ### Async Patterns
@@ -696,24 +642,8 @@ class HomeworkListViewModel: ObservableObject {
 }
 ```
 
-### React Native (Zustand)
-```typescript
-export const useHomeworkStore = create<HomeworkState>((set, get) => ({
-  homework: [],
-  isLoading: false,
-  error: null,
-
-  loadHomework: async () => {
-    set({ isLoading: true });
-    const homework = await HomeworkDB.getAll();
-    set({ homework, isLoading: false });
-  }
-}));
-```
-
 ### Next.js Web (Zustand)
 ```typescript
-// Same Zustand stores as React Native
 export const useHomeworkStore = create<HomeworkState>((set, get) => ({
   homework: [],
   isLoading: false,
@@ -751,7 +681,7 @@ cheater-web/
 │   │   └── ...
 │   ├── AppLayout.tsx        # Responsive layout wrapper
 │   └── ThemeToggle.tsx      # Dark mode toggle
-├── stores/                  # Zustand stores (shared with RN)
+├── stores/                  # Zustand stores
 │   ├── homeworkStore.ts
 │   ├── quizStore.ts
 │   └── captureStore.ts
@@ -924,8 +854,8 @@ private async convertImageToBase64(imageUri: string): Promise<string> {
 }
 ```
 
-#### 5. Shared Supabase Client
-**Same database as React Native** - Use Supabase client library
+#### 5. Supabase Client
+Use the Supabase client library for database operations:
 
 ```typescript
 // services/supabase.ts
@@ -1140,15 +1070,15 @@ npx tsx scripts/migrate.ts  # Run database migrations
 
 ## Deployment
 
-### iOS (Current)
+### iOS
 - Build with Xcode
 - TestFlight for beta
 - App Store submission
 
-### React Native (Future)
-- **Web**: Deploy to Vercel
-- **iOS/Android**: Build with EAS Build
-- **Environment**: Use `.env` for secrets
+### Next.js Web
+- **Hosting**: Deploy to Vercel
+- **Environment**: Use `.env.local` for secrets
+- **Build**: Automatic on push to main branch
 
 ## Configuration Files
 
@@ -1164,7 +1094,7 @@ npx tsx scripts/migrate.ts  # Run database migrations
 - Detection indicators
 - Question strategies
 
-**IMPORTANT**: These config files are shared between iOS and React Native implementations. Always validate JSON after editing.
+**IMPORTANT**: These config files are shared between iOS and Web implementations. Always validate JSON after editing.
 
 ## Common Pitfalls
 
@@ -1196,22 +1126,15 @@ npx tsx scripts/migrate.ts  # Run database migrations
 - Allow cancellation of long operations
 - Use background threads for heavy processing
 
-### 6. Supabase PostgREST Relationship Errors (React Native)
-- **Problem**: Duplicate foreign key constraints cause "Could not embed because more than one relationship was found" errors
-- **Common Cause**: SQL migrations with both inline and explicit FOREIGN KEY constraints
-- **Example**:
+### 6. Supabase Foreign Key Best Practices
+- **Best Practice**: Only use ONE foreign key constraint per relationship - either inline OR explicit, never both
+- **Example of correct FK**:
   ```sql
   CREATE TABLE progress (
-    homework_id UUID REFERENCES homework(id),  -- Inline FK
-    CONSTRAINT fk_homework
-      FOREIGN KEY (homework_id) REFERENCES homework(id)  -- Explicit FK (duplicate!)
+    homework_id UUID REFERENCES homework(id)  -- Use inline FK only
   );
   ```
-- **Solutions**:
-  1. Use `progress!homework_id (*)` syntax to specify which FK to use
-  2. Or simplify queries to avoid joins: use `select('*')` and handle missing data gracefully
-- **Best Practice**: Only use ONE foreign key constraint per relationship - either inline OR explicit, never both
-- **Location**: See `Cheater-React/supabase/migrations/03_create_progress_table.sql`
+- **Avoid**: Multiple FK constraints on the same column, which can cause ambiguous relationship errors
 
 ### 7. Next.js Hydration Errors (cheater-web)
 - **Problem**: "Hydration failed because server rendered HTML doesn't match client"
@@ -1290,13 +1213,12 @@ npx tsx scripts/migrate.ts  # Run database migrations
 
 - [Claude API Docs](https://docs.anthropic.com/claude/reference/messages_post)
 - [SwiftUI Documentation](https://developer.apple.com/documentation/swiftui)
-- [React Native Docs](https://reactnative.dev/docs/getting-started)
-- [Expo Documentation](https://docs.expo.dev)
-- [Supabase Docs](https://supabase.com/docs)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Tailwind CSS v4 Docs](https://tailwindcss.com/docs)
 - [Radix UI Docs](https://www.radix-ui.com/primitives)
 - [Framer Motion Docs](https://www.framer.com/motion)
+- [Supabase Docs](https://supabase.com/docs)
+- [Zustand Docs](https://zustand-demo.pmnd.rs)
 
 ## Getting Help
 
@@ -1318,34 +1240,35 @@ When encountering issues:
 - **Headway-inspired design** for web - modern consumer app aesthetic
 - **Performance matters** - 60fps, 2-3 second quiz generation
 - **Claude Vision API** does both OCR and question generation in one call
-- **Shared database** - React Native mobile and Next.js web use same Supabase database
+- **Modern web stack** - Next.js, Tailwind CSS, Zustand, Supabase
 - **Never expose API keys** - Use Next.js API routes to proxy external API calls
 
 ---
 
 **Last Updated**: January 2025
-**Documentation Version**: 1.1.0
+**Documentation Version**: 2.0.0
 **Project Status**:
-- ✅ iOS MVP Complete (Core Data + SwiftUI)
-- ✅ React Native MVP Complete (Supabase + Expo)
-  - Full end-to-end flow working
-  - Photo capture → AI quiz generation → Database save → Quiz gameplay
-  - All core features implemented
-  - Known issue: PostgREST relationship queries (documented above)
-- ✅ **Next.js Web MVP Complete (Current Focus)**
+- ✅ **iOS Native App** (Production-Ready)
+  - Platform: iOS 15+
+  - Tech Stack: SwiftUI + Core Data
+  - Status: Complete and stable
+  - App Store ready
+
+- ✅ **Next.js Web App** (Active Development)
   - Framework: Next.js 16 + App Router + Turbopack
   - Design: Headway-inspired modern web app
   - Responsive: Desktop sidebar + Mobile bottom nav
-  - Database: Shared Supabase PostgreSQL with React Native
+  - Database: Supabase PostgreSQL
+  - Status: MVP complete with all core features
   - Full end-to-end flow: Image upload → AI quiz generation → Quiz gameplay
-  - All core features working
   - Server-side API proxy for Claude API (no CORS issues)
   - Optimized image processing in browser
   - Framer Motion animations
   - Dark mode support (next-themes)
-- 🚧 Next Steps:
-  - Deploy to Vercel (web)
-  - Deploy React Native with EAS Build (mobile)
+
+- 🚧 **Next Steps**:
+  - Deploy Next.js web app to Vercel
   - Add user authentication (Supabase Auth)
   - Implement spaced repetition algorithm
   - Add study statistics and analytics
+  - iOS app store submission
