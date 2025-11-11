@@ -38,6 +38,40 @@ export default function CaptureScreen() {
     }, [state])
   );
 
+  const takePhoto = async () => {
+    // Request camera permission
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Camera permission is required to take photos');
+      return;
+    }
+
+    // Launch camera
+    setState('selecting');
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const uri = result.assets[0].uri;
+      setSelectedImage(uri);
+
+      // Convert to blob for web upload
+      if (uri.startsWith('blob:') || uri.startsWith('data:')) {
+        try {
+          const response = await fetch(uri);
+          const blob = await response.blob();
+          setImageBlob(blob);
+        } catch (err) {
+          console.error('Failed to convert image to blob:', err);
+        }
+      }
+    }
+
+    setState('idle');
+  };
+
   const pickImage = async () => {
     // Request permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -187,7 +221,7 @@ export default function CaptureScreen() {
           Capture Homework
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Take a photo or choose from library
+          Snap a photo or pick from your library
         </Text>
       </View>
 
@@ -209,22 +243,41 @@ export default function CaptureScreen() {
           )}
         </View>
       ) : (
-        <Pressable
-          onPress={pickImage}
-          style={({ pressed }) => [
-            styles.pickButton,
-            {
-              backgroundColor: colors.cardBackground,
-              opacity: pressed ? 0.8 : 1
-            },
-            Shadow.card
-          ]}
-        >
-          <Text style={styles.pickIcon}>📷</Text>
-          <Text style={[styles.pickText, { color: colors.textPrimary }]}>
-            Pick an Image
-          </Text>
-        </Pressable>
+        <View style={styles.pickContainer}>
+          <Pressable
+            onPress={takePhoto}
+            style={({ pressed }) => [
+              styles.pickButton,
+              {
+                backgroundColor: colors.cardBackground,
+                opacity: pressed ? 0.8 : 1
+              },
+              Shadow.card
+            ]}
+          >
+            <Text style={styles.pickIcon}>📷</Text>
+            <Text style={[styles.pickText, { color: colors.textPrimary }]}>
+              Take Photo
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={pickImage}
+            style={({ pressed }) => [
+              styles.pickButton,
+              {
+                backgroundColor: colors.cardBackground,
+                opacity: pressed ? 0.8 : 1
+              },
+              Shadow.card
+            ]}
+          >
+            <Text style={styles.pickIcon}>🖼️</Text>
+            <Text style={[styles.pickText, { color: colors.textPrimary }]}>
+              Choose from Library
+            </Text>
+          </Pressable>
+        </View>
       )}
 
       {/* Actions */}
@@ -268,7 +321,7 @@ export default function CaptureScreen() {
           <View style={styles.instructionsList}>
             <InstructionItem
               number="1"
-              text="Pick a photo of your homework"
+              text="Take a photo or choose from library"
               colors={colors}
             />
             <InstructionItem
@@ -356,12 +409,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold'
   },
+  pickContainer: {
+    gap: Spacing.medium,
+    marginBottom: Spacing.large
+  },
   pickButton: {
-    height: 300,
+    height: 200,
     borderRadius: Radius.card,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.large
+    justifyContent: 'center'
   },
   pickIcon: {
     fontSize: 64,

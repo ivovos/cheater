@@ -4,6 +4,7 @@
  */
 
 import { Tabs } from 'expo-router';
+import { Text } from 'react-native';
 import { useColors } from '../../theme';
 
 export default function TabLayout() {
@@ -44,8 +45,8 @@ export default function TabLayout() {
   );
 }
 
-// Simple tab icon component (we'll enhance this later)
+// Simple tab icon component
 function TabIcon({ name, color, size }: { name: string; color: string; size: number }) {
   const emoji = name === 'home' ? '📚' : '📸';
-  return <span style={{ fontSize: size }}>{emoji}</span>;
+  return <Text style={{ fontSize: size }}>{emoji}</Text>;
 }

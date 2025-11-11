@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Background colors (Light mode) */
+    --background: 0 0% 100%; /* #FFFFFF */
+    --background-secondary: 240 4.8% 95.9%; /* #F2F2F7 */
+    --background-tertiary: 0 0% 100%; /* #FFFFFF */
+
+    /* Card colors */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 0%; /* #000000 */
+
+    /* Text colors */
+    --foreground: 0 0% 0%; /* #000000 */
+    --foreground-secondary: 240 2% 56%; /* #8E8E93 */
+    --foreground-tertiary: 240 6% 79%; /* #C7C7CC */
+
+    /* Borders & separators */
+    --border: 240 6% 78%; /* #C6C6C8 */
+    --separator: 240 6% 78%; /* #C6C6C8 */
+  }
+
+  .dark {
+    /* Background colors (Dark mode) */
+    --background: 0 0% 0%; /* #000000 */
+    --background-secondary: 0 0% 11%; /* #1C1C1E */
+    --background-tertiary: 0 0% 17%; /* #2C2C2E */
+
+    /* Card colors */
+    --card: 0 0% 11%; /* #1C1C1E */
+    --card-foreground: 0 0% 100%; /* #FFFFFF */
+
+    /* Text colors */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+    --foreground-secondary: 240 2% 56%; /* #8E8E93 */
+    --foreground-tertiary: 0 0% 28%; /* #48484A */
+
+    /* Borders & separators */
+    --border: 0 0% 22%; /* #38383A */
+    --separator: 0 0% 22%; /* #38383A */
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* iOS-style smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Ensure smooth color transitions for dark mode */
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  /* Remove transition from motion elements (Framer Motion handles these) */
+  [data-framer-motion],
+  [data-framer-motion] * {
+    transition: none !important;
+  }
+}
